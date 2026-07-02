@@ -555,6 +555,7 @@ function pronItem(){
         <li>1回目は空振りすることがある → もう一度🎤をタップ</li>
         <li>直らない時は、ヒント欄の [ ] 内のコードを先生に送ってね</li>
       </ol>
+      <button class="listen-btn" style="margin-top:8px" onclick="micTest()">🩺 マイク単体テスト</button>
     </details>
     <div id="pron-out"></div>
   </div>`);
@@ -564,14 +565,24 @@ function listen(){
   if(rec){ try{rec.stop();}catch(e){} rec=null; return; }
   speechSynthesis.cancel();
   const r = new SR();
-  r.lang = "en-US"; r.interimResults = false; r.maxAlternatives = 5;
+  r.lang = "en-US"; r.continuous = false; r.maxAlternatives = 5;
+  r.interimResults = true; // iOS Safariはinterim無しだとonresultが来ないことがある
   const mic = $("#mic");
   mic.classList.add("listening");
   $("#hint").textContent = "マイク準備中…";
+  let finals = [], interim = "", errored = false;
   r.onaudiostart = () => { $("#hint").textContent = "🎧 聞いてるよ！はっきり話してね（もう一度タップで停止）"; };
-  r.onresult = e => { pronResult([...e.results[0]].map(a=>a.transcript)); };
-  r.onnomatch = () => { $("#hint").textContent = "聞き取れなかった。もう少し大きな声でもう一回！"; };
+  r.onresult = e => {
+    let fin = [], inter = "";
+    for(const res of e.results){
+      if(res.isFinal) fin.push(...[...res].map(a=>a.transcript));
+      else inter += res[0].transcript;
+    }
+    if(fin.length) finals = fin;
+    if(inter){ interim = inter; $("#hint").textContent = "👂 " + inter; }
+  };
   r.onerror = e => {
+    errored = true;
     const msgs = {
       "not-allowed": "マイクが許可されてない。アドレスバーの「ぁあ」→ Webサイトの設定 → マイクを許可",
       "service-not-allowed": "iPhoneの音声入力がオフかも。設定 → 一般 → キーボード →「音声入力」をON。LINEの中で開いてる場合はSafariで開き直してね",
@@ -582,10 +593,25 @@ function listen(){
     };
     $("#hint").textContent = (msgs[e.error] || "聞き取れなかった。もう一回タップ！") + " [" + e.error + "]";
   };
-  const watchdog = setTimeout(()=>{ if(rec===r){ try{r.stop();}catch(e){} $("#hint").textContent = "反応がなかった。もう一回🎤をタップしてみて（1回目は空振りすることがある）"; } }, 12000);
-  r.onend = () => { clearTimeout(watchdog); mic.classList.remove("listening"); rec=null; };
+  const watchdog = setTimeout(()=>{ if(rec===r){ try{r.stop();}catch(e){} } }, 12000);
+  r.onend = () => {
+    clearTimeout(watchdog); mic.classList.remove("listening"); rec=null;
+    const cands = finals.length ? finals : (interim ? [interim] : []);
+    if(cands.length) pronResult(cands);
+    else if(!errored) $("#hint").textContent = "聞き取れなかった…もう一回タップ！（ダメな時は下の🛠へ）";
+  };
   rec = r;
-  try{ r.start(); }catch(e){ $("#hint").textContent="開始できなかった。もう一回タップ！"; }
+  try{ r.start(); }catch(e){ $("#hint").textContent = "開始できなかった。もう一回タップ！ [" + (e.name||"start-error") + "]"; }
+}
+async function micTest(){
+  $("#hint").textContent = "🩺 マイク単体をテスト中…";
+  try{
+    const st = await navigator.mediaDevices.getUserMedia({audio:true});
+    st.getTracks().forEach(t=>t.stop());
+    $("#hint").textContent = "✅ マイク自体はOK！原因は認識サービス側。iOSを最新にして、もう一度🎤を試してみて";
+  }catch(e){
+    $("#hint").textContent = "❌ マイクが使えてない: " + e.name + "。設定 → アプリ → Safari → マイクを確認";
+  }
 }
 function tokens(s){ return s.toLowerCase().replace(/[^a-z0-9' ]/g," ").split(/\s+/).filter(Boolean); }
 function matchScore(target, heard){
