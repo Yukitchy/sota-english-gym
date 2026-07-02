@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SOTA'S ENGLISH GYM｜そうたの英語トレセン</title>
+<style>
+:root{
+  --bg:#02070E; --panel:rgba(9,28,44,.78); --panel2:rgba(15,42,64,.88);
+  --line:rgba(86,214,240,.30); --line-strong:rgba(86,214,240,.65);
+  --cyan:#56D6F0; --cyan-hi:#B4F1FF; --cyan-dim:#2B7E96;
+  --green:#3EE6A8; --red:#FF6E5E; --amber:#FFC351;
+  --text:#EAF7FF; --sub:#93B4CA;
+  --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;min-height:100vh;line-height:1.6}
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(ellipse 130% 60% at 50% -12%, rgba(40,125,165,.38), transparent 62%),
+    radial-gradient(ellipse 90% 50% at 50% 112%, rgba(18,70,110,.32), transparent 62%),
+    repeating-linear-gradient(0deg, rgba(86,214,240,.045) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, rgba(86,214,240,.045) 0 1px, transparent 1px 44px);}
+body::after{content:"";position:fixed;left:0;right:0;top:-22%;height:22%;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(86,214,240,.07),transparent);
+  animation:scan 9s linear infinite;}
+@keyframes scan{to{transform:translateY(600%)}}
+#app{max-width:520px;margin:0 auto;padding:16px 16px 90px;animation:boot .5s ease-out}
+@keyframes boot{from{opacity:0;transform:translateY(8px)}}
+
+/* header */
+header{display:flex;align-items:center;gap:12px;padding:6px 2px 16px}
+.logo{width:44px;height:44px;border-radius:50%;flex-shrink:0;position:relative;
+  background:radial-gradient(circle, #E4FCFF 0 16%, rgba(120,226,248,.95) 24%, rgba(24,70,100,.9) 42%, rgba(4,18,32,.96) 62%);
+  box-shadow:0 0 16px rgba(86,214,240,.55), inset 0 0 8px rgba(180,241,255,.8);
+  animation:reactor 3s ease-in-out infinite;}
+.logo::before{content:"";position:absolute;inset:3px;border-radius:50%;
+  border:2px dashed rgba(150,232,252,.75);animation:spin 14s linear infinite;}
+@keyframes reactor{0%,100%{box-shadow:0 0 10px rgba(86,214,240,.4), inset 0 0 6px rgba(180,241,255,.7)}
+  50%{box-shadow:0 0 24px rgba(86,214,240,.85), inset 0 0 11px rgba(180,241,255,.95)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+header h1{font-size:13.5px;letter-spacing:.1em;white-space:nowrap;color:var(--cyan-hi);text-shadow:0 0 12px rgba(86,214,240,.55);font-weight:700}
+header .sub{font-size:11px;color:var(--sub);letter-spacing:.1em}
+.streak{margin-left:auto;text-align:right;font-size:11px;color:var(--sub);white-space:nowrap}
+.streak b{display:block;font-size:18px;color:var(--amber);text-shadow:0 0 10px rgba(255,195,81,.5);font-variant-numeric:tabular-nums}
+
+/* cards / HUD panels */
+.card,.menu-btn{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+.card::before,.menu-btn::before{content:"";position:absolute;top:-1px;left:-1px;width:14px;height:14px;pointer-events:none;
+  border-top:2px solid var(--line-strong);border-left:2px solid var(--line-strong);border-radius:var(--radius) 0 0 0;}
+.card::after,.menu-btn::after{content:"";position:absolute;bottom:-1px;right:-1px;width:14px;height:14px;pointer-events:none;
+  border-bottom:2px solid var(--line-strong);border-right:2px solid var(--line-strong);border-radius:0 0 var(--radius) 0;}
+.card{padding:16px;margin-bottom:12px}
+.menu-btn{display:flex;align-items:center;gap:14px;width:100%;padding:16px;margin-bottom:12px;color:var(--text);font-size:15px;text-align:left;cursor:pointer;transition:transform .08s, box-shadow .15s, border-color .15s}
+.menu-btn:active{transform:scale(.98);border-color:var(--line-strong);box-shadow:0 0 14px rgba(86,214,240,.25)}
+.menu-btn .ic{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.menu-btn .tt b{display:block;font-size:15px}
+.menu-btn .tt span{font-size:12px;color:var(--sub)}
+.menu-btn .arrow{margin-left:auto;color:var(--cyan-dim)}
+
+/* quiz */
+.qhead{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--sub);margin-bottom:10px;letter-spacing:.06em}
+.qhead .quit{background:none;border:none;color:var(--sub);font-size:13px;cursor:pointer;padding:4px}
+.bar{height:6px;background:rgba(15,42,64,.9);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan-dim),var(--cyan) 60%,var(--cyan-hi));border-radius:3px;transition:width .3s;box-shadow:0 0 8px rgba(86,214,240,.7)}
+.prompt-label{font-size:12px;color:var(--cyan);letter-spacing:.18em;margin-bottom:6px;text-shadow:0 0 8px rgba(86,214,240,.4)}
+.prompt{font-size:26px;font-weight:700;margin-bottom:4px;word-break:break-word;text-shadow:0 0 14px rgba(86,214,240,.25)}
+.prompt.small{font-size:18px;font-weight:600;line-height:1.7}
+.prompt-note{font-size:12px;color:var(--sub);margin-bottom:16px}
+.choices{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.choice{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--cyan-dim);border-radius:8px;padding:14px;font-size:15px;color:var(--text);text-align:left;cursor:pointer;transition:transform .08s;word-break:break-word}
+.choice:active{transform:scale(.98)}
+.choice.correct{background:rgba(62,230,168,.13);border-color:var(--green);border-left-color:var(--green);box-shadow:0 0 12px rgba(62,230,168,.3)}
+.choice.wrong{background:rgba(255,110,94,.13);border-color:var(--red);border-left-color:var(--red);box-shadow:0 0 12px rgba(255,110,94,.3)}
+.choice:disabled{cursor:default;opacity:1}
+.explain{margin-top:14px;padding:12px 14px;background:rgba(86,214,240,.07);border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;font-size:13px;color:var(--text)}
+.explain b{color:var(--cyan)}
+.next-btn{width:100%;margin-top:16px;padding:15px;border:1px solid var(--line-strong);border-radius:8px;background:linear-gradient(135deg,#2FB9DE,#1E7FD6);color:#021019;font-size:16px;font-weight:700;letter-spacing:.08em;cursor:pointer;box-shadow:0 0 16px rgba(86,214,240,.35)}
+.tag{display:inline-block;font-size:11px;padding:2px 10px;border-radius:99px;background:var(--panel2);color:var(--cyan);border:1px solid var(--line);margin-bottom:10px;letter-spacing:.06em}
+
+/* result */
+.result{text-align:center;padding:26px 16px}
+.result .big{font-size:52px;filter:drop-shadow(0 0 14px rgba(86,214,240,.5))}
+.result h2{font-size:20px;margin:8px 0 2px;letter-spacing:.08em}
+.result p{color:var(--sub);font-size:13px}
+.score-row{display:flex;justify-content:center;gap:24px;margin:18px 0}
+.score-row div b{display:block;font-size:26px;color:var(--cyan-hi);text-shadow:0 0 12px rgba(86,214,240,.5);font-variant-numeric:tabular-nums}
+.score-row div span{font-size:11px;color:var(--sub)}
+.review-list{text-align:left;margin-top:14px}
+.review-list .item{padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;font-size:13px}
+.review-list .item b{color:var(--cyan)}
+
+/* settings pills */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.pill{padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel2);color:var(--sub);font-size:13px;cursor:pointer}
+.pill.on{background:rgba(86,214,240,.14);border-color:var(--cyan);color:var(--cyan-hi);font-weight:600;box-shadow:0 0 10px rgba(86,214,240,.3)}
+.section-label{font-size:12px;color:var(--sub);margin-top:14px;letter-spacing:.08em}
+
+/* stats */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:14px;text-align:center}
+.stat b{display:block;font-size:24px;color:var(--cyan-hi);text-shadow:0 0 12px rgba(86,214,240,.5);font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--sub)}
+.weak-item{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid rgba(86,214,240,.15);font-size:14px}
+.weak-item:last-child{border-bottom:none}
+.weak-item .ja{color:var(--sub);font-size:12px;text-align:right}
+h3.sec{font-size:14px;margin:6px 0 10px;color:var(--cyan);letter-spacing:.14em;text-shadow:0 0 8px rgba(86,214,240,.4)}
+
+/* pron */
+.mic-btn{width:88px;height:88px;border-radius:50%;border:none;position:relative;
+  background:radial-gradient(circle, #E4FCFF 0 12%, rgba(120,226,248,.95) 20%, rgba(24,70,100,.95) 44%, rgba(4,18,32,.98) 66%);
+  box-shadow:0 0 20px rgba(86,214,240,.5);
+  font-size:34px;display:block;margin:20px auto 8px;cursor:pointer}
+.mic-btn::before{content:"";position:absolute;inset:5px;border-radius:50%;
+  border:2px dashed rgba(150,232,252,.65);animation:spin 10s linear infinite}
+.mic-btn.listening{animation:pulse 1.2s infinite;background:radial-gradient(circle, #FFE9E4 0 12%, rgba(255,140,120,.95) 20%, rgba(120,40,30,.95) 44%, rgba(30,6,4,.98) 66%)}
+.mic-btn.listening::before{border-color:rgba(255,150,130,.7)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,110,94,.45)}70%{box-shadow:0 0 0 24px rgba(255,110,94,0)}100%{box-shadow:0 0 0 0 rgba(255,110,94,0)}}
+.mic-hint{text-align:center;font-size:12px;color:var(--sub);min-height:18px}
+.pron-target{font-size:24px;font-weight:700;text-align:center;margin:10px 0 2px;word-break:break-word;text-shadow:0 0 14px rgba(86,214,240,.3)}
+.pron-ja{text-align:center;color:var(--sub);font-size:13px;margin-bottom:10px}
+.listen-btn{display:block;margin:0 auto;background:var(--panel2);border:1px solid var(--line-strong);color:var(--cyan);border-radius:99px;padding:9px 20px;font-size:14px;cursor:pointer}
+.heard{margin-top:12px;text-align:center;font-size:17px;line-height:1.9}
+.heard .hit{color:var(--green)}
+.heard .miss{color:var(--red);text-decoration:underline}
+.score-big{text-align:center;font-size:30px;font-weight:800;margin-top:10px;color:var(--cyan-hi);text-shadow:0 0 14px rgba(86,214,240,.5)}
+.back-link{background:none;border:none;color:var(--sub);font-size:13px;cursor:pointer;padding:8px 0;display:block}
+.note{font-size:12px;color:var(--sub)}
+.footer-note{text-align:center;font-size:11px;color:var(--sub);margin-top:20px;opacity:.7;letter-spacing:.06em}
+
+@media (prefers-reduced-motion:reduce){
+  body::after,.logo,.logo::before,.mic-btn::before,.mic-btn.listening,#app{animation:none!important}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const VOCAB = [{"en": "what kind of ~", "ja": "どんな〜", "d": "2022-02-26", "n": 2}, {"en": "I/my/he/his/she/her/we/you/they", "ja": "人称代名詞", "d": "2022-02-11", "n": 1}, {"en": "art/history", "ja": "美術/歴史", "d": "2022-02-19", "n": 1}, {"en": "shooter", "ja": "シューティングゲーム", "d": "2022-02-19", "n": 1}, {"en": "vinegar/soy source", "ja": "酢/醤油", "d": "2022-02-26", "n": 1}, {"en": "muscle pain", "ja": "筋肉痛", "d": "2022-02-26", "n": 1}, {"en": "breakfast", "ja": "朝食", "d": "2022-03-05", "n": 1}, {"en": "egg/shrimp/carrot/mushroom", "ja": "卵/エビ/にんじん/きのこ", "d": "2022-03-05", "n": 1}, {"en": "what/how", "ja": "何/どのように", "d": "2022-03-20", "n": 1}, {"en": "~ed/~ing", "ja": "過去形/現在進行形", "d": "2022-03-26", "n": 1}, {"en": "forget/forgot", "ja": "忘れる/忘れた", "d": "2022-03-26", "n": 1}, {"en": "tonight/this morning/last night", "ja": "今夜/今朝/昨夜", "d": "2022-04-02", "n": 1}, {"en": "monthly/weekly/daily", "ja": "毎月の/毎週/毎日の", "d": "2022-04-02", "n": 1}, {"en": "prefecture", "ja": "都道府県", "d": "2022-04-16", "n": 1}, {"en": "run/learn", "ja": "走る/学ぶ", "d": "2022-04-23", "n": 1}, {"en": "fear/tear", "ja": "恐怖/涙", "d": "2022-04-23", "n": 1}, {"en": "disappear", "ja": "消える", "d": "2022-04-23", "n": 1}, {"en": "true/false", "ja": "正しい/間違った", "d": "2022-04-30", "n": 1}, {"en": "remember", "ja": "思い出す", "d": "2022-04-30", "n": 1}, {"en": "be brave", "ja": "勇ましくあれ", "d": "2022-04-30", "n": 1}, {"en": "mine/craft", "ja": "鉱山/ものづくり", "d": "2022-05-07", "n": 1}, {"en": "mean", "ja": "〜を意味する", "d": "2022-05-07", "n": 1}, {"en": "nothing special", "ja": "特に何もなかった", "d": "2022-05-21", "n": 1}, {"en": "stranger", "ja": "よそもの", "d": "2022-05-21", "n": 1}, {"en": "will/won't", "ja": "〜する/しない(未来)", "d": "2022-05-28", "n": 1}, {"en": "there is/are", "ja": "〜がある", "d": "2022-05-28", "n": 1}, {"en": "memorize", "ja": "覚える", "d": "2022-06-11", "n": 1}, {"en": "there are ~", "ja": "〜がある", "d": "2022-06-11", "n": 1}, {"en": "hard/difficult", "ja": "難しい", "d": "2022-06-26", "n": 1}, {"en": "move from A to B", "ja": "Aから移動した", "d": "2022-07-03", "n": 1}, {"en": "competition/tournament", "ja": "大会/トーナメント", "d": "2022-07-03", "n": 1}, {"en": "against", "ja": "〜に対して", "d": "2022-07-17", "n": 1}, {"en": "lose-lost", "ja": "負ける-負けた", "d": "2022-07-17", "n": 1}, {"en": "Thanks to ~/Because of ~", "ja": "~のおかげで/~のせいで", "d": "2022-07-24", "n": 1}, {"en": "who/when/where/that", "ja": "人/時/場所を表す関係代名詞", "d": "2022-07-31", "n": 1}, {"en": "whoever/whenever", "ja": "~する人/時は誰でも/いつでも", "d": "2022-07-31", "n": 1}, {"en": "something to eat", "ja": "食べるもの", "d": "2022-08-07", "n": 1}, {"en": "Could you ~?/Do you wanna ~?", "ja": "丁寧な依頼/カジュアルな依頼", "d": "2022-08-07", "n": 1}, {"en": "The (ザ/ジ)", "ja": "pronunciation rule", "d": "2022-08-07", "n": 1}, {"en": "Don't mind/Never mind/Don't worry", "ja": "気にすんな/心配ないさ", "d": "2022-08-14", "n": 1}, {"en": "lol/WTF", "ja": "笑/なんてこった", "d": "2022-08-14", "n": 1}, {"en": "Nyanko Taisen/Tetris", "ja": "にゃんこ大戦争/テトリス", "d": "2022-08-21", "n": 1}, {"en": "What do you mean [by] ~?", "ja": "どういう意味", "d": "2022-08-28", "n": 1}, {"en": "You know/like/kinda", "ja": "あれだよあれ/なんか/~のような", "d": "2022-09-04", "n": 1}, {"en": "newest", "ja": "一番新しい", "d": "2022-09-11", "n": 1}, {"en": "different/difference", "ja": "違う(形容詞)/違い(名詞)", "d": "2022-09-11", "n": 1}, {"en": "onsen egg/onsen manjuu", "ja": "温泉卵/温泉饅頭", "d": "2022-10-02", "n": 1}, {"en": "get used to ~", "ja": "~するのに慣れる", "d": "2025-05-07", "n": 2}, {"en": "defender/position", "ja": "ディフェンダー/ポジション", "d": "2022-10-09", "n": 1}, {"en": "tournament/win/lose", "ja": "大会/勝つ/負ける", "d": "2022-10-23", "n": 1}, {"en": "Because of / Due to ~", "ja": "~のせいで", "d": "2022-10-23", "n": 1}, {"en": "crazy about ~", "ja": "~にハマっている", "d": "2022-11-06", "n": 1}, {"en": "Lure/Burakuri", "ja": "ルアー/ブラクリ", "d": "2022-11-06", "n": 1}, {"en": "say/tell", "ja": "言う/教える、連絡する", "d": "2022-11-13", "n": 1}, {"en": "can/could", "ja": "できる/できた(過去)", "d": "2022-11-13", "n": 1}, {"en": "can/can't", "ja": "できる/できない", "d": "2022-11-20", "n": 1}, {"en": "too ~ to", "ja": "〜すぎて..できない", "d": "2022-12-04", "n": 1}, {"en": "Too [adj] + to [verb]", "ja": "~すぎて..できない", "d": "2022-12-11", "n": 1}, {"en": "cousin", "ja": "いとこ", "d": "2023-01-01", "n": 1}, {"en": "sibling", "ja": "兄弟姉妹", "d": "2023-01-01", "n": 1}, {"en": "grandpa/grandma", "ja": "おじいさん/おばあさん", "d": "2023-01-08", "n": 1}, {"en": "how to ~", "ja": "~のやり方", "d": "2023-01-08", "n": 1}, {"en": "You look ~", "ja": "~そうだね", "d": "2023-01-15", "n": 1}, {"en": "by mistake", "ja": "うっかり〜", "d": "2023-01-15", "n": 1}, {"en": "get A [verb]", "ja": "Aに[動詞]させる", "d": "2023-01-22", "n": 1}, {"en": "make A B", "ja": "AをBにする", "d": "2023-01-22", "n": 1}, {"en": "No one/nobody", "ja": "誰も", "d": "2023-01-22", "n": 1}, {"en": "confident/confidence", "ja": "自信がある/自信", "d": "2023-02-05", "n": 1}, {"en": "S/V/O/C", "ja": "主語/動詞/目的語/補語", "d": "2023-02-12", "n": 1}, {"en": "otherwise, or", "ja": "~でなければ", "d": "2023-02-19", "n": 1}, {"en": "per hour", "ja": "1時間あたり", "d": "2023-02-19", "n": 1}, {"en": "itchy/Hay fever", "ja": "かゆい/花粉症", "d": "2023-03-05", "n": 1}, {"en": "even if ~", "ja": "たとえ〜だとしても", "d": "2025-04-09", "n": 4}, {"en": "hair salon", "ja": "美容院", "d": "2023-03-13", "n": 1}, {"en": "Mc~", "ja": "〜さんの息子", "d": "2023-03-13", "n": 1}, {"en": "ask A to ~", "ja": "Aに〜するよう頼む", "d": "2023-04-05", "n": 1}, {"en": "lately, nowadays, these days", "ja": "最近は", "d": "2023-04-05", "n": 1}, {"en": "I have been to", "ja": "行ってきた", "d": "2023-04-05", "n": 1}, {"en": "After you.", "ja": "「お先にどうぞ」", "d": "2023-04-09", "n": 1}, {"en": "I don't mind.", "ja": "「気にしないよ」", "d": "2023-04-09", "n": 1}, {"en": "mind ~ing", "ja": "~することを気にする", "d": "2023-04-09", "n": 1}, {"en": "promotion", "ja": "進級", "d": "2023-04-16", "n": 1}, {"en": "be belong to ~", "ja": "~に所属する", "d": "2023-04-16", "n": 1}, {"en": "sore", "ja": "痛い", "d": "2023-04-29", "n": 1}, {"en": "throat", "ja": "喉", "d": "2023-04-29", "n": 1}, {"en": "celebrate", "ja": "祝う", "d": "2023-04-29", "n": 1}, {"en": "wallet", "ja": "財布", "d": "2023-04-29", "n": 1}, {"en": "easy to ~", "ja": "~やすい", "d": "2023-05-07", "n": 1}, {"en": "catch a cold", "ja": "風邪をひく", "d": "2023-12-14", "n": 2}, {"en": "speaking of~", "ja": "「~と言えば」", "d": "2023-05-07", "n": 1}, {"en": "cough", "ja": "咳をする", "d": "2023-05-14", "n": 1}, {"en": "miss", "ja": "~がなくて恋しく思う", "d": "2023-05-21", "n": 1}, {"en": "instead of ~", "ja": "~の代わりに", "d": "2023-05-21", "n": 1}, {"en": "salary", "ja": "給料", "d": "2024-10-02", "n": 2}, {"en": "as long as~", "ja": "~である限り", "d": "2023-05-28", "n": 1}, {"en": "I have heard of ~", "ja": "~を聞いたことがある", "d": "2023-06-04", "n": 1}, {"en": "motivation", "ja": "モチベーション、やる気", "d": "2023-06-04", "n": 1}, {"en": "for~/in order to~/to ~", "ja": "~するために", "d": "2023-06-25", "n": 1}, {"en": "weather", "ja": "天気", "d": "2023-06-25", "n": 1}, {"en": "whether", "ja": "~かどうか", "d": "2023-06-25", "n": 1}, {"en": "a seeded school team", "ja": "シード校", "d": "2023-07-02", "n": 1}, {"en": "far", "ja": "遠い", "d": "2023-07-09", "n": 1}, {"en": "vehicle", "ja": "乗り物", "d": "2026-03-11", "n": 2}, {"en": "rent", "ja": "借りる", "d": "2023-07-09", "n": 1}, {"en": "jealous", "ja": "うらやましい", "d": "2023-07-16", "n": 1}, {"en": "extend", "ja": "延長する", "d": "2023-07-16", "n": 1}, {"en": "limit", "ja": "制限", "d": "2023-07-16", "n": 1}, {"en": "steep", "ja": "険しい", "d": "2024-04-24", "n": 2}, {"en": "slope", "ja": "坂", "d": "2023-07-23", "n": 1}, {"en": "familiar with ~", "ja": "~に詳しい", "d": "2023-07-23", "n": 1}, {"en": "interview", "ja": "インタビュー、面接", "d": "2024-01-31", "n": 2}, {"en": "job interview", "ja": "就職面接", "d": "2023-07-30", "n": 1}, {"en": "blind", "ja": "目が見えない、見えない、盲目の", "d": "2023-07-30", "n": 1}, {"en": "beautiful", "ja": "美しい", "d": "2023-07-30", "n": 1}, {"en": "shy", "ja": "はずかしい、恥ずかしがり屋の", "d": "2023-07-30", "n": 1}, {"en": "hurry", "ja": "急かす、急ぐ", "d": "2023-07-30", "n": 1}, {"en": "comic (manga) artist", "ja": "漫画家", "d": "2023-07-30", "n": 1}, {"en": "cicada", "ja": "蝉(せみ)", "d": "2023-07-30", "n": 1}, {"en": "garbage", "ja": "ごみ、ゴミ箱", "d": "2023-07-30", "n": 1}, {"en": "discover", "ja": "発見する", "d": "2023-08-06", "n": 1}, {"en": "fossil", "ja": "化石", "d": "2023-08-06", "n": 1}, {"en": "chef", "ja": "料理人", "d": "2023-08-06", "n": 1}, {"en": "mind", "ja": "〜を気にする", "d": "2023-08-06", "n": 1}, {"en": "care", "ja": "〜を心配する、気にかける", "d": "2023-08-06", "n": 1}, {"en": "protect", "ja": "〜保護する", "d": "2023-08-06", "n": 1}, {"en": "I'm broke", "ja": "金欠なんすよねぇ", "d": "2023-08-06", "n": 1}, {"en": "monster", "ja": "怪物", "d": "2023-08-06", "n": 1}, {"en": "annoying", "ja": "めんどい、イライラする", "d": "2023-08-13", "n": 1}, {"en": "fortune", "ja": "幸運", "d": "2023-08-13", "n": 1}, {"en": "fortunately", "ja": "幸運なことに", "d": "2023-08-13", "n": 1}, {"en": "to escape", "ja": "逃げる", "d": "2023-08-13", "n": 1}, {"en": "It is said that ~", "ja": "〜と言われていた", "d": "2023-08-13", "n": 1}, {"en": "since ~", "ja": "〜してから、〜", "d": "2023-08-13", "n": 1}, {"en": "during ~", "ja": "〜している間", "d": "2023-08-13", "n": 1}, {"en": "from scratch", "ja": "ゼロから", "d": "2023-08-13", "n": 1}, {"en": "speaking of ~", "ja": "〜と言えば", "d": "2023-08-13", "n": 1}, {"en": "especially", "ja": "特に、中でも", "d": "2023-08-21", "n": 1}, {"en": "dream of ~ing", "ja": "〜になることを夢見る", "d": "2023-08-21", "n": 1}, {"en": "one day", "ja": "いつか", "d": "2023-08-21", "n": 1}, {"en": "coast", "ja": "海岸", "d": "2023-08-21", "n": 1}, {"en": "selfish", "ja": "わがままな", "d": "2023-08-30", "n": 1}, {"en": "leave", "ja": "出発する、旅立つ、去る", "d": "2023-08-30", "n": 1}, {"en": "hungry", "ja": "お腹ぺこぺこ", "d": "2023-08-30", "n": 1}, {"en": "full", "ja": "お腹いっぱい", "d": "2023-08-30", "n": 1}, {"en": "nap", "ja": "昼寝", "d": "2023-09-06", "n": 1}, {"en": "take a nap", "ja": "昼寝する", "d": "2023-09-06", "n": 1}, {"en": "semester", "ja": "学期", "d": "2023-09-06", "n": 1}, {"en": "fisheries school", "ja": "水産学校", "d": "2023-09-06", "n": 1}, {"en": "detective", "ja": "探偵", "d": "2023-09-06", "n": 1}, {"en": "register", "ja": "登録する", "d": "2026-03-18", "n": 2}, {"en": "encourage", "ja": "〜を勇気づける", "d": "2023-09-06", "n": 1}, {"en": "stable", "ja": "安定した", "d": "2023-09-13", "n": 1}, {"en": "unstable", "ja": "不安定な", "d": "2023-09-13", "n": 1}, {"en": "tip", "ja": "コツ", "d": "2023-09-20", "n": 1}, {"en": "neighborhood", "ja": "近所", "d": "2023-09-20", "n": 1}, {"en": "kind", "ja": "種類、優しい", "d": "2023-09-20", "n": 1}, {"en": "public", "ja": "公共の", "d": "2023-09-20", "n": 1}, {"en": "invite", "ja": "招待する", "d": "2024-07-24", "n": 2}, {"en": "introduce", "ja": "紹介する", "d": "2023-09-20", "n": 1}, {"en": "invent", "ja": "開発する", "d": "2023-09-27", "n": 1}, {"en": "resource", "ja": "リソース、資源", "d": "2023-09-27", "n": 1}, {"en": "regular", "ja": "普通の、通常の", "d": "2023-09-27", "n": 1}, {"en": "novel", "ja": "小説", "d": "2023-09-27", "n": 1}, {"en": "famous", "ja": "有名な", "d": "2023-09-27", "n": 1}, {"en": "wealth", "ja": "富", "d": "2023-09-27", "n": 1}, {"en": "fame", "ja": "名声", "d": "2023-09-27", "n": 1}, {"en": "power", "ja": "力", "d": "2023-09-27", "n": 1}, {"en": "temperature", "ja": "温度", "d": "2023-09-27", "n": 1}, {"en": "~ degree", "ja": "〜度", "d": "2023-09-27", "n": 1}, {"en": "agree", "ja": "〜に同意する、賛成する", "d": "2023-09-27", "n": 1}, {"en": "dislike", "ja": "嫌い", "d": "2023-09-27", "n": 1}, {"en": "describe", "ja": "表現する、説明する、描写する", "d": "2023-09-27", "n": 1}, {"en": "at least", "ja": "少なくとも", "d": "2023-09-27", "n": 1}, {"en": "usually", "ja": "普段", "d": "2023-09-27", "n": 1}, {"en": "Even", "ja": "〜でさえも", "d": "2023-10-04", "n": 1}, {"en": "even if", "ja": "もし〜だとしたら(まだ起こっていない場合)", "d": "2024-07-10", "n": 2}, {"en": "even though", "ja": "〜だとしても(もう起こっている場合)", "d": "2023-10-04", "n": 1}, {"en": "get along with ~", "ja": "〜と仲良くする", "d": "2023-10-04", "n": 1}, {"en": "then", "ja": "その時に", "d": "2023-10-04", "n": 1}, {"en": "decide", "ja": "決断する", "d": "2023-10-04", "n": 1}, {"en": "decided", "ja": "決断した", "d": "2023-10-04", "n": 1}, {"en": "decision", "ja": "決断", "d": "2023-10-04", "n": 1}, {"en": "silent", "ja": "静かな", "d": "2023-10-04", "n": 1}, {"en": "loud", "ja": "大きな声の", "d": "2023-10-04", "n": 1}, {"en": "in charge of ~", "ja": "〜を担当する", "d": "2023-10-04", "n": 1}, {"en": "show off ~", "ja": "〜を見せびらかす、自慢する", "d": "2023-10-18", "n": 1}, {"en": "line up", "ja": "列に並ぶ", "d": "2023-10-18", "n": 1}, {"en": "lining up", "ja": "列に並ぶこと", "d": "2023-10-18", "n": 1}, {"en": "hang out with", "ja": "〜と遊ぶ", "d": "2023-11-01", "n": 1}, {"en": "used to ~", "ja": "〜していた", "d": "2024-07-17", "n": 2}, {"en": "belong to", "ja": "〜に所属する", "d": "2023-11-01", "n": 1}, {"en": "belonged to", "ja": "〜に所属していた", "d": "2023-11-01", "n": 1}, {"en": "addicting", "ja": "中毒性がある", "d": "2023-11-01", "n": 1}, {"en": "to freeze", "ja": "凍らせる", "d": "2023-11-01", "n": 1}, {"en": "first of all", "ja": "そもそも、第一に", "d": "2026-03-18", "n": 3}, {"en": "possible", "ja": "可能な", "d": "2023-11-01", "n": 1}, {"en": "to extend", "ja": "延長する", "d": "2023-11-01", "n": 1}, {"en": "riddle", "ja": "なぞなぞ", "d": "2023-11-01", "n": 1}, {"en": "push", "ja": "押す", "d": "2023-11-09", "n": 1}, {"en": "pull", "ja": "引く、ガチャを引く", "d": "2023-11-09", "n": 1}, {"en": "as soon as ~", "ja": "〜してすぐに、〜し次第", "d": "2023-11-09", "n": 1}, {"en": "recommend", "ja": "オススメする", "d": "2023-11-09", "n": 1}, {"en": "recommendation", "ja": "オススメ", "d": "2023-11-09", "n": 1}, {"en": "interested in ~", "ja": "〜に興味がある", "d": "2023-11-15", "n": 1}, {"en": "I've never heard of it", "ja": "聞いたことない", "d": "2023-11-15", "n": 1}, {"en": "when it comes to ~", "ja": "〜とこととなると、〜に関しては", "d": "2023-11-15", "n": 1}, {"en": "a lot of ~", "ja": "たくさんの", "d": "2023-11-15", "n": 1}, {"en": "be invited to 〜", "ja": "〜に招待される", "d": "2023-11-22", "n": 1}, {"en": "What if 〜", "ja": "もしも〜したらどうするの？", "d": "2023-11-22", "n": 1}, {"en": "to pass", "ja": "合格する", "d": "2024-02-07", "n": 2}, {"en": "environment", "ja": "環境", "d": "2023-11-29", "n": 1}, {"en": "Why don't you 〜?", "ja": "〜してみたらどう？", "d": "2023-11-29", "n": 1}, {"en": "Air pollution", "ja": "大気汚染", "d": "2023-12-14", "n": 1}, {"en": "Water pollution", "ja": "水質汚染", "d": "2023-12-14", "n": 1}, {"en": "so 〜〜 that 、、、", "ja": "〜〜〜だから、、、できる", "d": "2023-12-14", "n": 1}, {"en": "compared to 〜", "ja": "〜と比べて", "d": "2023-12-14", "n": 1}, {"en": "bridge", "ja": "橋", "d": "2023-12-20", "n": 1}, {"en": "subtitles", "ja": "字幕", "d": "2024-01-10", "n": 1}, {"en": "uncle", "ja": "おじさん", "d": "2024-01-10", "n": 1}, {"en": "aunt", "ja": "おばさん", "d": "2024-01-10", "n": 1}, {"en": "spend", "ja": "〜を過ごす、〜を費やす", "d": "2024-01-24", "n": 1}, {"en": "by myself", "ja": "自分で", "d": "2024-01-24", "n": 1}, {"en": "because of 〜", "ja": "〜のせいで", "d": "2024-01-24", "n": 1}, {"en": "thanks to 〜", "ja": "〜のおかげで", "d": "2024-01-24", "n": 1}, {"en": "be crazy about 〜/addicted to 〜", "ja": "〜にハマっている", "d": "2024-01-24", "n": 1}, {"en": "fireplace", "ja": "暖炉", "d": "2024-01-31", "n": 1}, {"en": "firewood", "ja": "薪", "d": "2024-01-31", "n": 1}, {"en": "instead of 〜", "ja": "〜の代わりに", "d": "2024-01-31", "n": 1}, {"en": "Both of 〜", "ja": "〜の両方", "d": "2024-02-07", "n": 1}, {"en": "grade", "ja": "学年", "d": "2024-02-07", "n": 1}, {"en": "technical school", "ja": "専門学校", "d": "2024-02-07", "n": 1}, {"en": "decide/be decided", "ja": "決める(能動)/決まる(受動)", "d": "2024-02-07", "n": 1}, {"en": "theme park", "ja": "遊園地", "d": "2024-02-21", "n": 1}, {"en": "graduate", "ja": "卒業する", "d": "2024-02-21", "n": 1}, {"en": "nervous", "ja": "緊張している", "d": "2024-02-21", "n": 1}, {"en": "plush toy", "ja": "ぬいぐるみ", "d": "2024-02-28", "n": 1}, {"en": "dizzy", "ja": "乗り物酔い", "d": "2024-06-05", "n": 2}, {"en": "pass", "ja": "合格する", "d": "2024-02-28", "n": 1}, {"en": "motor bike", "ja": "バイク", "d": "2024-02-28", "n": 1}, {"en": "scooter", "ja": "スクーター", "d": "2024-02-28", "n": 1}, {"en": "according to 〜", "ja": "〜によれば、よると", "d": "2024-03-06", "n": 1}, {"en": "to fix", "ja": "直す", "d": "2024-03-06", "n": 1}, {"en": "budget", "ja": "予算", "d": "2026-05-27", "n": 3}, {"en": "That's why", "ja": "だから", "d": "2024-03-06", "n": 1}, {"en": "Electric bike", "ja": "電動自転車", "d": "2024-03-06", "n": 1}, {"en": "orientation", "ja": "オリエンテーション", "d": "2024-03-13", "n": 1}, {"en": "belong to 〜", "ja": "〜に属する", "d": "2024-03-13", "n": 1}, {"en": "commute", "ja": "通勤・通学する", "d": "2024-03-13", "n": 1}, {"en": "similar to 〜", "ja": "〜と似ている", "d": "2024-03-13", "n": 1}, {"en": "Fukuura harbour", "ja": "福浦港", "d": "2024-03-20", "n": 1}, {"en": "Kasago", "ja": "カサゴ", "d": "2024-03-27", "n": 2}, {"en": "Haze", "ja": "ハゼ", "d": "2024-03-20", "n": 1}, {"en": "to hide", "ja": "隠す", "d": "2024-03-20", "n": 1}, {"en": "weakened", "ja": "弱っている", "d": "2024-03-20", "n": 1}, {"en": "weak point", "ja": "弱点、短所", "d": "2024-03-20", "n": 1}, {"en": "strong point", "ja": "長所", "d": "2024-03-20", "n": 1}, {"en": "refrigerator", "ja": "冷蔵庫", "d": "2024-03-27", "n": 1}, {"en": "have been experiencing", "ja": "〜の間体験している", "d": "2024-03-27", "n": 1}, {"en": "boring", "ja": "つまらない", "d": "2024-03-27", "n": 1}, {"en": "bored", "ja": "飽きた", "d": "2024-03-27", "n": 1}, {"en": "muddy", "ja": "濁った", "d": "2024-03-27", "n": 1}, {"en": "sunlight", "ja": "陽の光", "d": "2024-03-27", "n": 1}, {"en": "tend to [verb]", "ja": "〜する傾向がある", "d": "2024-03-27", "n": 1}, {"en": "easy to [verb]", "ja": "〜しやすい", "d": "2024-03-27", "n": 1}, {"en": "influenza", "ja": "インフルエンザ", "d": "2024-04-03", "n": 1}, {"en": "avoid [verb]ing", "ja": "〜することから避ける、逃げる", "d": "2024-04-03", "n": 1}, {"en": "own", "ja": "所有する", "d": "2024-04-03", "n": 1}, {"en": "interested in", "ja": "〜に興味がある", "d": "2024-04-03", "n": 1}, {"en": "cherry blossom", "ja": "桜", "d": "2024-04-03", "n": 1}, {"en": "bloom", "ja": "咲く", "d": "2024-04-03", "n": 1}, {"en": "traffic light", "ja": "信号機", "d": "2024-04-03", "n": 1}, {"en": "border", "ja": "境界線、境界", "d": "2024-04-03", "n": 1}, {"en": "church", "ja": "教会", "d": "2024-04-03", "n": 1}, {"en": "just right", "ja": "ちょうどいい", "d": "2024-04-03", "n": 1}, {"en": "to get on/off", "ja": "乗る/降りる", "d": "2024-04-10", "n": 1}, {"en": "What's the matter?", "ja": "どうした？", "d": "2024-04-10", "n": 1}, {"en": "prepare for~", "ja": "〜の準備をする", "d": "2024-04-17", "n": 1}, {"en": "in total", "ja": "合計で", "d": "2024-04-17", "n": 1}, {"en": "fortune/fortunately", "ja": "幸運/運のいいことに", "d": "2024-04-24", "n": 1}, {"en": "Make sense", "ja": "なるほど", "d": "2024-04-24", "n": 1}, {"en": "It can't be helped", "ja": "仕方ない", "d": "2024-05-08", "n": 1}, {"en": "prefer", "ja": "好む", "d": "2026-04-01", "n": 2}, {"en": "gain/lose weight", "ja": "太る/痩せる", "d": "2024-05-08", "n": 1}, {"en": "to pull/to push", "ja": "引っ張る/押す", "d": "2024-05-15", "n": 1}, {"en": "be crazy about~", "ja": "〜にハマる", "d": "2026-06-10", "n": 2}, {"en": "The + 比較級, the + 比較級", "ja": "〜すればするほど〜になる", "d": "2024-05-15", "n": 1}, {"en": "argue", "ja": "議論する、言い争う", "d": "2024-05-24", "n": 1}, {"en": "make up with~", "ja": "〜と仲直りする", "d": "2024-05-24", "n": 1}, {"en": "apologize", "ja": "謝罪する", "d": "2026-05-13", "n": 2}, {"en": "annoy/annoying", "ja": "いらいらさせる", "d": "2024-05-24", "n": 1}, {"en": "I'm good/bad at~", "ja": "〜が得意/苦手", "d": "2024-05-29", "n": 1}, {"en": "too [形容詞] to [動詞]", "ja": "〜すぎて〜できない", "d": "2024-05-29", "n": 1}, {"en": "humid/dry", "ja": "ジメジメ/カラッと", "d": "2025-06-04", "n": 2}, {"en": "most of~/mostly", "ja": "〜の大半", "d": "2024-06-05", "n": 1}, {"en": "work out", "ja": "筋トレ", "d": "2024-06-05", "n": 1}, {"en": "possible/enable", "ja": "可能な/〜を可能にする", "d": "2024-06-12", "n": 1}, {"en": "strict", "ja": "厳しい", "d": "2026-03-18", "n": 3}, {"en": "apply/application", "ja": "〜に申し込む/申し込み", "d": "2024-06-12", "n": 1}, {"en": "if~", "ja": "〜できるかどうか", "d": "2024-06-19", "n": 1}, {"en": "kill time", "ja": "時間をつぶす", "d": "2024-06-19", "n": 1}, {"en": "I wonder~", "ja": "〜かなぁ？", "d": "2024-06-19", "n": 1}, {"en": "fail for~", "ja": "〜に落ちる", "d": "2024-07-10", "n": 1}, {"en": "what if~?", "ja": "もし〜したら？", "d": "2024-07-10", "n": 1}, {"en": "keep ~ing", "ja": "〜し続ける", "d": "2024-07-17", "n": 1}, {"en": "to commute", "ja": "通勤する", "d": "2024-07-24", "n": 1}, {"en": "fever", "ja": "熱", "d": "2024-07-24", "n": 1}, {"en": "compete", "ja": "競う", "d": "2026-04-08", "n": 2}, {"en": "behavior", "ja": "振る舞い", "d": "2024-08-07", "n": 1}, {"en": "reject", "ja": "拒否する", "d": "2024-08-07", "n": 1}, {"en": "renew", "ja": "更新する", "d": "2024-08-15", "n": 1}, {"en": "identification", "ja": "身分証明", "d": "2024-08-15", "n": 1}, {"en": "I'm confident for ~", "ja": "〜に自信がある", "d": "2024-08-15", "n": 1}, {"en": "I'm willing to ~", "ja": "〜と強く思う", "d": "2024-08-21", "n": 1}, {"en": "be supposed to ~", "ja": "〜するつもり", "d": "2026-01-28", "n": 2}, {"en": "speaking of which", "ja": "そういえば", "d": "2025-05-14", "n": 2}, {"en": "mean that ~", "ja": "〜っていう意味", "d": "2024-08-28", "n": 1}, {"en": "stuff/staff", "ja": "物/スタッフ", "d": "2024-09-04", "n": 1}, {"en": "dialect", "ja": "方言", "d": "2024-09-04", "n": 1}, {"en": "as long as ~", "ja": "〜しさえすれば", "d": "2024-09-14", "n": 1}, {"en": "wage", "ja": "賃金", "d": "2026-06-17", "n": 2}, {"en": "co-worker", "ja": "同僚", "d": "2024-09-14", "n": 1}, {"en": "What do you mean by [word]?", "ja": "〜はどういう意味ですか？", "d": "2024-09-18", "n": 1}, {"en": "lose/gain weight", "ja": "体重を減らす/増やす", "d": "2024-09-18", "n": 1}, {"en": "peak", "ja": "山頂", "d": "2024-09-25", "n": 1}, {"en": "I was supposed to ~", "ja": "〜する予定だった", "d": "2026-04-22", "n": 2}, {"en": "depends on ~", "ja": "〜による", "d": "2025-05-07", "n": 2}, {"en": "heavy/light", "ja": "重い/軽い", "d": "2024-10-02", "n": 1}, {"en": "so far", "ja": "今の所", "d": "2026-06-17", "n": 2}, {"en": "early/earlier", "ja": "早い/より早い", "d": "2024-10-09", "n": 1}, {"en": "show A off", "ja": "Aを見せびらかす", "d": "2024-10-09", "n": 1}, {"en": "slippery", "ja": "滑りやすい", "d": "2024-10-09", "n": 1}, {"en": "かける (multiply)", "ja": "〜をかける", "d": "2024-10-16", "n": 1}, {"en": "representative", "ja": "代表", "d": "2024-10-16", "n": 1}, {"en": "planned to ~", "ja": "〜する計画だった", "d": "2024-10-16", "n": 1}, {"en": "delinquents", "ja": "不良", "d": "2024-10-30", "n": 1}, {"en": "once a year", "ja": "年に一度", "d": "2024-11-06", "n": 1}, {"en": "I was late for ~", "ja": "〜に遅れる", "d": "2024-11-06", "n": 1}, {"en": "sore/throat", "ja": "傷んだ/喉", "d": "2024-12-25", "n": 1}, {"en": "my point is", "ja": "要するに", "d": "2024-12-25", "n": 1}, {"en": "hang out with ~", "ja": "〜と遊ぶ", "d": "2024-12-25", "n": 1}, {"en": "from now on", "ja": "これからは", "d": "2025-01-15", "n": 1}, {"en": "side effect", "ja": "副作用", "d": "2025-01-15", "n": 1}, {"en": "school dormitory", "ja": "学生寮", "d": "2025-01-15", "n": 1}, {"en": "runny nose", "ja": "鼻水", "d": "2025-01-22", "n": 1}, {"en": "border/borderline", "ja": "ボーダー", "d": "2025-01-22", "n": 1}, {"en": "allergy", "ja": "アレジー", "d": "2025-03-05", "n": 1}, {"en": "let me ~", "ja": "〜させて", "d": "2025-03-05", "n": 1}, {"en": "maritime", "ja": "海洋の、船舶の", "d": "2025-03-05", "n": 1}, {"en": "beginner/intermediate/expert", "ja": "初級/中級/上級", "d": "2025-03-19", "n": 1}, {"en": "I can afford to ~", "ja": "〜する余裕がある", "d": "2025-03-19", "n": 1}, {"en": "awkward", "ja": "気まずい", "d": "2025-03-26", "n": 1}, {"en": "How should I say?", "ja": "なんていうの？", "d": "2025-03-26", "n": 1}, {"en": "sneeze", "ja": "くしゃみをする", "d": "2025-04-02", "n": 1}, {"en": "no worries!/anytime!", "ja": "心配しないで/いつでもいいぜ", "d": "2025-04-02", "n": 1}, {"en": "always/often/usually/rarely/never", "ja": "頻度副詞", "d": "2025-04-09", "n": 1}, {"en": "retire from ~", "ja": "〜から引退する", "d": "2025-05-14", "n": 1}, {"en": "wonder ~", "ja": "〜かなぁと思う", "d": "2025-05-21", "n": 1}, {"en": "I've heard that ~", "ja": "〜と聞いた", "d": "2025-05-21", "n": 1}, {"en": "mainly", "ja": "主に", "d": "2025-05-28", "n": 1}, {"en": "just in time", "ja": "ギリギリで間に合う", "d": "2025-05-28", "n": 1}, {"en": "be in charge of ~", "ja": "〜を担当する", "d": "2025-06-11", "n": 1}, {"en": "platform 1/2/3", "ja": "~番線", "d": "2025-06-11", "n": 1}, {"en": "afraid/Don't be afraid", "ja": "恐る/怖がらないで", "d": "2025-06-18", "n": 1}, {"en": "専攻する", "ja": "to major", "d": "2025-06-18", "n": 1}, {"en": "save", "ja": "お金を貯める", "d": "2025-06-18", "n": 1}, {"en": "vending machine", "ja": "自販機", "d": "2025-06-25", "n": 1}, {"en": "phenomenon", "ja": "現象", "d": "2025-06-25", "n": 1}, {"en": "Time flies", "ja": "時が過ぎるのは早い", "d": "2025-07-09", "n": 1}, {"en": "competent", "ja": "有能な", "d": "2025-07-09", "n": 1}, {"en": "This is what I've got", "ja": "これが私の実力です", "d": "2025-07-30", "n": 1}, {"en": "end of term", "ja": "学期末", "d": "2025-07-30", "n": 1}, {"en": "certificate/license", "ja": "資格", "d": "2025-07-30", "n": 1}, {"en": "従食(まかない)", "ja": "staff meal", "d": "2025-08-13", "n": 1}, {"en": "to get along with ~", "ja": "〜と仲良くなる", "d": "2025-08-13", "n": 1}, {"en": "get mad at ~", "ja": "〜に腹を立てる", "d": "2025-08-20", "n": 1}, {"en": "not A but B", "ja": "AではなくB", "d": "2025-08-20", "n": 1}, {"en": "taboo", "ja": "禁忌の", "d": "2025-08-20", "n": 1}, {"en": "to float", "ja": "浮く", "d": "2025-09-03", "n": 1}, {"en": "当直", "ja": "当番勤務、番人", "d": "2025-09-03", "n": 1}, {"en": "航海", "ja": "voyage, sailing", "d": "2025-09-03", "n": 1}, {"en": "specifically", "ja": "具体的に", "d": "2025-10-29", "n": 1}, {"en": "national certification", "ja": "国家試験", "d": "2025-10-29", "n": 1}, {"en": "to book vs to reserve", "ja": "予約する(有料/無料)", "d": "2025-10-29", "n": 1}, {"en": "to save", "ja": "貯める、守る", "d": "2025-11-05", "n": 1}, {"en": "to earn", "ja": "稼ぐ", "d": "2025-11-05", "n": 1}, {"en": "First of all/And/So/That's why/Therefore", "ja": "談話標識", "d": "2025-11-05", "n": 1}, {"en": "sore throat", "ja": "喉が痛い", "d": "2025-11-05", "n": 1}, {"en": "suddenly", "ja": "急に", "d": "2026-05-06", "n": 2}, {"en": "sudden death", "ja": "突然死", "d": "2026-05-06", "n": 2}, {"en": "including tax", "ja": "税込", "d": "2025-12-03", "n": 1}, {"en": "reward", "ja": "報酬", "d": "2025-12-03", "n": 1}, {"en": "achievement", "ja": "達成", "d": "2025-12-03", "n": 1}, {"en": "practical", "ja": "実用的な", "d": "2026-05-13", "n": 2}, {"en": "used to + verb", "ja": "以前は〜〜していた", "d": "2025-12-10", "n": 1}, {"en": "until/since", "ja": "〜まで/〜から", "d": "2025-12-10", "n": 1}, {"en": "be familiar with ~", "ja": "〜に詳しい", "d": "2025-12-17", "n": 1}, {"en": "employee benefit", "ja": "福利厚生", "d": "2025-12-17", "n": 1}, {"en": "expire", "ja": "〜が切れる", "d": "2025-12-17", "n": 1}, {"en": "a natural airhead", "ja": "天然な性格", "d": "2026-01-07", "n": 1}, {"en": "ambition", "ja": "抱負", "d": "2026-01-07", "n": 1}, {"en": "it/that can't be helped", "ja": "仕方ないよ", "d": "2026-01-21", "n": 1}, {"en": "What a waste!", "ja": "もったいないな〜", "d": "2026-01-21", "n": 1}, {"en": "insurance", "ja": "保険", "d": "2026-01-28", "n": 1}, {"en": "guarantee", "ja": "保証する", "d": "2026-04-01", "n": 2}, {"en": "temporary license (仮免許)", "ja": "仮免許", "d": "2026-01-28", "n": 1}, {"en": "avoid", "ja": "避ける", "d": "2026-05-20", "n": 2}, {"en": "common sense", "ja": "常識", "d": "2026-02-05", "n": 1}, {"en": "to tap", "ja": "タップする", "d": "2026-02-05", "n": 1}, {"en": "candidate", "ja": "候補者", "d": "2026-02-18", "n": 1}, {"en": "financial", "ja": "財政上の、金銭上の、経済的な", "d": "2026-02-18", "n": 1}, {"en": "reservation", "ja": "予約", "d": "2026-02-18", "n": 1}, {"en": "risky", "ja": "危ない", "d": "2026-02-18", "n": 1}, {"en": "sightseeing", "ja": "観光", "d": "2026-05-20", "n": 2}, {"en": "should have done", "ja": "〜すべきだった", "d": "2026-02-25", "n": 1}, {"en": "several", "ja": "いくつかの (formal)", "d": "2026-07-01", "n": 2}, {"en": "teenager", "ja": "10代", "d": "2026-02-25", "n": 1}, {"en": "warranty", "ja": "保証", "d": "2026-02-25", "n": 1}, {"en": "regulation", "ja": "規制、取締り", "d": "2026-02-25", "n": 1}, {"en": "potential", "ja": "潜在的な", "d": "2026-03-04", "n": 1}, {"en": "construction", "ja": "建設、工事", "d": "2026-03-04", "n": 1}, {"en": "benefit", "ja": "利益、恩恵、特典", "d": "2026-03-04", "n": 1}, {"en": "comfortable", "ja": "快適な、楽な", "d": "2026-03-04", "n": 1}, {"en": "purchase", "ja": "購入、買う", "d": "2026-05-27", "n": 2}, {"en": "retire", "ja": "引退する、退職する", "d": "2026-03-11", "n": 2}, {"en": "income", "ja": "収入", "d": "2026-03-04", "n": 1}, {"en": "malfunction, out of order", "ja": "故障", "d": "2026-03-04", "n": 1}, {"en": "executive", "ja": "幹部、重役", "d": "2026-03-04", "n": 1}, {"en": "shop clerk", "ja": "店員さん", "d": "2026-03-04", "n": 1}, {"en": "century", "ja": "100年、世紀", "d": "2026-03-04", "n": 1}, {"en": "decade", "ja": "10年", "d": "2026-04-08", "n": 2}, {"en": "episode", "ja": "話", "d": "2026-03-11", "n": 1}, {"en": "Like I said", "ja": "前に言った様に", "d": "2026-03-11", "n": 1}, {"en": "postpone", "ja": "延期する、先送りする、後回しにする", "d": "2026-03-11", "n": 1}, {"en": "nearly", "ja": "ほとんど、ほぼ", "d": "2026-03-11", "n": 1}, {"en": "refer", "ja": "参照する、言及する", "d": "2026-04-01", "n": 3}, {"en": "monitor", "ja": "監視する、モニターする", "d": "2026-06-24", "n": 3}, {"en": "existing", "ja": "既存の、現存する", "d": "2026-03-11", "n": 1}, {"en": "recognize", "ja": "認識する、理解する", "d": "2026-03-11", "n": 1}, {"en": "ideal", "ja": "理想的な、申し分ない", "d": "2026-03-11", "n": 1}, {"en": "focus", "ja": "集中する", "d": "2026-03-11", "n": 1}, {"en": "jet lag", "ja": "時差ぼけ", "d": "2026-03-11", "n": 1}, {"en": "policy", "ja": "方針", "d": "2026-03-18", "n": 1}, {"en": "paperwork", "ja": "書類", "d": "2026-03-18", "n": 1}, {"en": "patron", "ja": "パトロン、後援者", "d": "2026-03-18", "n": 1}, {"en": "cashier", "ja": "レジ", "d": "2026-03-18", "n": 1}, {"en": "inventory", "ja": "在庫、棚卸し", "d": "2026-04-15", "n": 2}, {"en": "initial", "ja": "初期の、最初の", "d": "2026-03-18", "n": 1}, {"en": "enclose", "ja": "同封する、封入する", "d": "2026-03-18", "n": 1}, {"en": "search", "ja": "検索する", "d": "2026-03-18", "n": 1}, {"en": "establish", "ja": "設立する、確立する", "d": "2026-03-18", "n": 1}, {"en": "few", "ja": "少ない", "d": "2026-03-18", "n": 1}, {"en": "many", "ja": "多い", "d": "2026-03-18", "n": 1}, {"en": "competition", "ja": "大会", "d": "2026-04-08", "n": 2}, {"en": "found", "ja": "設立する", "d": "2026-03-25", "n": 1}, {"en": "manufacturer", "ja": "製造業者、メーカー", "d": "2026-05-20", "n": 2}, {"en": "research", "ja": "研究、調査", "d": "2026-03-25", "n": 1}, {"en": "unique", "ja": "独特な", "d": "2026-03-25", "n": 1}, {"en": "require", "ja": "必要とする、要求する", "d": "2026-04-15", "n": 2}, {"en": "downtown", "ja": "繁華街、都心", "d": "2026-03-25", "n": 1}, {"en": "expect", "ja": "予期する、期待する", "d": "2026-03-25", "n": 1}, {"en": "relevant", "ja": "関連した、適切な", "d": "2026-03-25", "n": 1}, {"en": "promptly", "ja": "速やかに、即座に", "d": "2026-03-25", "n": 1}, {"en": "matter", "ja": "事柄、事", "d": "2026-03-25", "n": 1}, {"en": "to matter", "ja": "大切にする", "d": "2026-03-25", "n": 1}, {"en": "to apologize", "ja": "謝罪する", "d": "2026-03-25", "n": 1}, {"en": "to deal with", "ja": "〜を扱う", "d": "2026-03-25", "n": 1}, {"en": "to pick up", "ja": "〜をひろう", "d": "2026-03-25", "n": 1}, {"en": "to spill", "ja": "〜をこぼす", "d": "2026-03-25", "n": 1}, {"en": "to surround", "ja": "~を囲む、取り囲む", "d": "2026-03-25", "n": 1}, {"en": "surrounding", "ja": "周囲のもの", "d": "2026-03-25", "n": 1}, {"en": "fancy", "ja": "豪華、高級感がある", "d": "2026-03-25", "n": 1}, {"en": "thanks to ~", "ja": "〜のおかげで", "d": "2026-03-25", "n": 1}, {"en": "to get used to~", "ja": "〜に慣れる", "d": "2026-03-25", "n": 1}, {"en": "to guide", "ja": "案内する", "d": "2026-04-01", "n": 1}, {"en": "curious", "ja": "好奇心旺盛な", "d": "2026-04-01", "n": 1}, {"en": "curiosity", "ja": "好奇心", "d": "2026-04-01", "n": 1}, {"en": "mayor", "ja": "市長", "d": "2026-04-01", "n": 1}, {"en": "finalize", "ja": "最終的に決定する、完成させる", "d": "2026-04-01", "n": 1}, {"en": "production", "ja": "生産、製造", "d": "2026-04-01", "n": 1}, {"en": "delivery", "ja": "配達", "d": "2026-04-01", "n": 1}, {"en": "fit", "ja": "適した、ぴったりの", "d": "2026-04-08", "n": 2}, {"en": "setting", "ja": "設定", "d": "2026-04-01", "n": 1}, {"en": "labor", "ja": "労働、勤労、努力", "d": "2026-04-01", "n": 1}, {"en": "ASAP: as soon as possible", "ja": "なるはやで", "d": "2026-04-08", "n": 1}, {"en": "document", "ja": "書類", "d": "2026-04-08", "n": 1}, {"en": "laboratory", "ja": "研究室", "d": "2026-04-08", "n": 1}, {"en": "appoint", "ja": "任命する、指名する、予約する", "d": "2026-05-27", "n": 2}, {"en": "quarterly", "ja": "四半期ごとの", "d": "2026-04-08", "n": 1}, {"en": "duty", "ja": "義務", "d": "2026-04-08", "n": 1}, {"en": "competitor", "ja": "競合", "d": "2026-04-08", "n": 1}, {"en": "profile", "ja": "プロフィール", "d": "2026-04-08", "n": 1}, {"en": "degree", "ja": "程度、学位、度合い", "d": "2026-04-08", "n": 1}, {"en": "annual", "ja": "年一回の", "d": "2026-04-08", "n": 1}, {"en": "helpful", "ja": "役立つ、有益な、ためになる", "d": "2026-04-08", "n": 1}, {"en": "nostalgic", "ja": "懐かしい", "d": "2026-04-08", "n": 1}, {"en": "conflict", "ja": "衝突、対立、矛盾", "d": "2026-05-20", "n": 2}, {"en": "contract", "ja": "契約、契約書", "d": "2026-07-01", "n": 2}, {"en": "range", "ja": "範囲、幅", "d": "2026-04-15", "n": 1}, {"en": "repair", "ja": "修理", "d": "2026-04-15", "n": 1}, {"en": "accompany", "ja": "同行する", "d": "2026-04-15", "n": 1}, {"en": "tenant", "ja": "借主、テナント", "d": "2026-04-15", "n": 1}, {"en": "opening", "ja": "開店、求人", "d": "2026-04-15", "n": 1}, {"en": "claim", "ja": "主張する", "d": "2026-04-15", "n": 1}, {"en": "余談", "ja": "off topic", "d": "2026-04-15", "n": 1}, {"en": "まぁまぁ", "ja": "it's all right, not bad, soso", "d": "2026-04-15", "n": 1}, {"en": "football fish", "ja": "ちょうちんあんこう", "d": "2026-04-15", "n": 1}, {"en": "ecosystem", "ja": "生態系", "d": "2026-04-15", "n": 1}, {"en": "plan", "ja": "プラン", "d": "2026-04-15", "n": 1}, {"en": "to suggest", "ja": "提案する", "d": "2026-04-15", "n": 1}, {"en": "fault", "ja": "地層、断層", "d": "2026-04-15", "n": 1}, {"en": "to predict", "ja": "予測する", "d": "2026-04-15", "n": 1}, {"en": "from the scratch", "ja": "ゼロからやる", "d": "2026-04-15", "n": 1}, {"en": "group of ~", "ja": "~人のグループ", "d": "2026-04-15", "n": 1}, {"en": "research project", "ja": "自由研究、課題研究", "d": "2026-04-15", "n": 1}, {"en": "just because", "ja": "なんとなく、理由はない", "d": "2026-04-15", "n": 1}, {"en": "luxury", "ja": "贅沢", "d": "2026-04-22", "n": 1}, {"en": "develop", "ja": "開発する、発展させる", "d": "2026-04-22", "n": 1}, {"en": "remodel", "ja": "改装する、作り直す", "d": "2026-04-22", "n": 1}, {"en": "affect", "ja": "影響を与える、感動させる(動詞)", "d": "2026-04-22", "n": 1}, {"en": "effect", "ja": "影響、効果(名詞)", "d": "2026-04-22", "n": 1}, {"en": "quarter", "ja": "4半期、4分の1", "d": "2026-04-22", "n": 1}, {"en": "survey", "ja": "調査、アンケート、測量", "d": "2026-04-22", "n": 1}, {"en": "questionnaire", "ja": "アンケート用紙", "d": "2026-04-22", "n": 1}, {"en": "enthusiastic", "ja": "熱心な、意欲的な、乗り気な", "d": "2026-04-22", "n": 1}, {"en": "attend", "ja": "出席する", "d": "2026-04-22", "n": 1}, {"en": "stress", "ja": "強調する、ストレスをかける", "d": "2026-04-22", "n": 1}, {"en": "shortly", "ja": "まもなく、近いうちに", "d": "2026-05-13", "n": 2}, {"en": "to pretend", "ja": "〜のふりをする", "d": "2026-04-22", "n": 1}, {"en": "to protect", "ja": "~を守る、保護する", "d": "2026-04-22", "n": 1}, {"en": "to prepare", "ja": "準備する", "d": "2026-04-22", "n": 1}, {"en": "even more", "ja": "なおさら", "d": "2026-04-22", "n": 1}, {"en": "stairs", "ja": "階段", "d": "2026-04-22", "n": 1}, {"en": "handrail", "ja": "手すり", "d": "2026-04-22", "n": 1}, {"en": "to waste", "ja": "無駄にする", "d": "2026-04-22", "n": 1}, {"en": "It's waste", "ja": "もったいない", "d": "2026-04-22", "n": 1}, {"en": "to trust", "ja": "信じる", "d": "2026-04-22", "n": 1}, {"en": "to believe", "ja": "信じる", "d": "2026-04-22", "n": 1}, {"en": "to trash", "ja": "捨てる", "d": "2026-04-22", "n": 1}, {"en": "fragile", "ja": "脆い", "d": "2026-05-13", "n": 2}, {"en": "to cure", "ja": "治す", "d": "2026-05-06", "n": 1}, {"en": "happen to ~", "ja": "(意図せず、偶然)〜してしまう", "d": "2026-05-06", "n": 1}, {"en": "急発進", "ja": "sudden start", "d": "2026-05-06", "n": 1}, {"en": "急ブレーキ", "ja": "sudden braking", "d": "2026-05-06", "n": 1}, {"en": "急カーブ", "ja": "sudden turning", "d": "2026-05-06", "n": 1}, {"en": "curve", "ja": "曲線、カーブ(している形)", "d": "2026-05-06", "n": 1}, {"en": "to turn", "ja": "曲がる行為、カーブする", "d": "2026-05-06", "n": 1}, {"en": "sudden", "ja": "急な", "d": "2026-05-06", "n": 1}, {"en": "intersection", "ja": "交差点", "d": "2026-05-06", "n": 1}, {"en": "distance", "ja": "距離", "d": "2026-05-06", "n": 1}, {"en": "habit", "ja": "癖、習慣", "d": "2026-05-06", "n": 1}, {"en": "instructor", "ja": "教官", "d": "2026-05-06", "n": 1}, {"en": "to sue", "ja": "訴える", "d": "2026-05-06", "n": 1}, {"en": "former", "ja": "以前の", "d": "2026-05-06", "n": 1}, {"en": "remind", "ja": "思い出させる", "d": "2026-05-06", "n": 1}, {"en": "accessible", "ja": "アクセスしやすい", "d": "2026-05-06", "n": 1}, {"en": "organization", "ja": "組織、団体", "d": "2026-05-06", "n": 1}, {"en": "industry", "ja": "産業、工業", "d": "2026-05-06", "n": 1}, {"en": "refund", "ja": "払い戻し、返金", "d": "2026-05-06", "n": 1}, {"en": "anyway", "ja": "とにかく", "d": "2026-05-06", "n": 1}, {"en": "occur", "ja": "起こる、発生する、現れる", "d": "2026-05-06", "n": 1}, {"en": "neighbourhood", "ja": "近所", "d": "2026-05-06", "n": 1}, {"en": "correct", "ja": "正しい", "d": "2026-05-06", "n": 1}, {"en": "collect", "ja": "集める", "d": "2026-05-06", "n": 1}, {"en": "emphasize", "ja": "強調する", "d": "2026-05-13", "n": 1}, {"en": "advertising", "ja": "宣伝、広告", "d": "2026-05-13", "n": 1}, {"en": "profession", "ja": "職業、専門職、自白", "d": "2026-05-13", "n": 1}, {"en": "attract", "ja": "惹きつける、魅了する", "d": "2026-05-13", "n": 1}, {"en": "fluent", "ja": "流暢な", "d": "2026-05-13", "n": 1}, {"en": "scholarship", "ja": "奨学金", "d": "2026-05-13", "n": 1}, {"en": "household", "ja": "家庭用の", "d": "2026-05-13", "n": 1}, {"en": "exactly, definitely, right", "ja": "そのとおり", "d": "2026-05-13", "n": 1}, {"en": "should have + 過去分詞", "ja": "~すべきだった", "d": "2026-05-13", "n": 1}, {"en": "instead of~", "ja": "~の代わりに", "d": "2026-05-13", "n": 1}, {"en": "come to think of it", "ja": "そういえば、考えてみると", "d": "2026-05-13", "n": 1}, {"en": "solid", "ja": "固体", "d": "2026-07-01", "n": 2}, {"en": "liquid", "ja": "液体", "d": "2026-07-01", "n": 2}, {"en": "display", "ja": "ディスプレイ,見せる、掲示する、展示する", "d": "2026-05-13", "n": 1}, {"en": "endeavor", "ja": "努力", "d": "2026-05-20", "n": 1}, {"en": "inquire", "ja": "問い合わせる、尋ねる", "d": "2026-05-20", "n": 1}, {"en": "serious", "ja": "深刻な、真面目な", "d": "2026-06-24", "n": 2}, {"en": "highly", "ja": "非常に、ひどく、高度に", "d": "2026-05-20", "n": 1}, {"en": "extended", "ja": "延長された、拡張された", "d": "2026-05-20", "n": 1}, {"en": "instrumental", "ja": "楽器の、有力な、決定的な", "d": "2026-05-20", "n": 1}, {"en": "majority", "ja": "大多数、過半数", "d": "2026-05-20", "n": 1}, {"en": "major", "ja": "主専攻", "d": "2026-05-20", "n": 1}, {"en": "minor", "ja": "副専攻", "d": "2026-06-17", "n": 2}, {"en": "to keep one's eyes on ~", "ja": "~に注視する、注意する", "d": "2026-05-20", "n": 1}, {"en": "million", "ja": "100万", "d": "2026-05-20", "n": 1}, {"en": "billion", "ja": "10億", "d": "2026-05-20", "n": 1}, {"en": "author", "ja": "著者", "d": "2026-05-20", "n": 1}, {"en": "tour", "ja": "ツアー", "d": "2026-05-20", "n": 1}, {"en": "tourist", "ja": "観光客", "d": "2026-05-20", "n": 1}, {"en": "as 形容詞 as ~", "ja": "〜と同じくらい", "d": "2026-05-20", "n": 1}, {"en": "not as 形容詞 as ~", "ja": "〜ほどではない", "d": "2026-05-20", "n": 1}, {"en": "turn on", "ja": "点ける", "d": "2026-05-20", "n": 1}, {"en": "turn off", "ja": "消す", "d": "2026-05-20", "n": 1}, {"en": "approximately, around", "ja": "およそ、約、大体", "d": "2026-05-27", "n": 1}, {"en": "laundry", "ja": "ランドリー、洗濯物", "d": "2026-05-27", "n": 1}, {"en": "influence", "ja": "影響、影響力", "d": "2026-05-27", "n": 1}, {"en": "nominate", "ja": "指名する、推薦する", "d": "2026-05-27", "n": 1}, {"en": "rapidly", "ja": "急速に、素早く", "d": "2026-05-27", "n": 1}, {"en": "priority", "ja": "優先事項、優先順位", "d": "2026-05-27", "n": 1}, {"en": "catering", "ja": "ケータリングの、出張料理の", "d": "2026-05-27", "n": 1}, {"en": "weekend", "ja": "週末", "d": "2026-05-27", "n": 1}, {"en": "weekdays", "ja": "平日", "d": "2026-05-27", "n": 1}, {"en": "discuss", "ja": "話し合う", "d": "2026-05-27", "n": 1}, {"en": "They are full of energy", "ja": "元気いっぱい", "d": "2026-05-27", "n": 1}, {"en": "energetic", "ja": "元気", "d": "2026-05-27", "n": 1}, {"en": "patient", "ja": "我慢強い", "d": "2026-05-27", "n": 1}, {"en": "in that case", "ja": "その場合", "d": "2026-05-27", "n": 1}, {"en": "to spend", "ja": "払う、費やす", "d": "2026-05-27", "n": 1}, {"en": "legislation", "ja": "法律", "d": "2026-06-10", "n": 1}, {"en": "eventually", "ja": "結局、ついに", "d": "2026-06-10", "n": 1}, {"en": "basis", "ja": "基礎、基盤", "d": "2026-06-10", "n": 1}, {"en": "illustrate", "ja": "説明する、例示する", "d": "2026-06-10", "n": 1}, {"en": "represent", "ja": "代表する、表す", "d": "2026-06-17", "n": 2}, {"en": "crew", "ja": "乗組員、作業員", "d": "2026-06-10", "n": 1}, {"en": "automobile", "ja": "自動車、車", "d": "2026-06-10", "n": 1}, {"en": "confident", "ja": "自信のある", "d": "2026-06-10", "n": 1}, {"en": "intermediate", "ja": "中級者", "d": "2026-06-10", "n": 1}, {"en": "performance", "ja": "実行、性能", "d": "2026-06-10", "n": 1}, {"en": "ceiling", "ja": "天井", "d": "2026-06-10", "n": 1}, {"en": "ligament", "ja": "靭帯(じんたい)", "d": "2026-06-10", "n": 1}, {"en": "so bad", "ja": "〜したくてしょうがない", "d": "2026-06-17", "n": 2}, {"en": "tool", "ja": "器具", "d": "2026-06-10", "n": 1}, {"en": "be into ~", "ja": "〜にハマってる", "d": "2026-06-10", "n": 1}, {"en": "be interested in~", "ja": "〜に興味がある", "d": "2026-06-10", "n": 1}, {"en": "considerably", "ja": "かなり、相当", "d": "2026-06-17", "n": 1}, {"en": "immediately", "ja": "ただちに、すぐに", "d": "2026-06-17", "n": 1}, {"en": "urge", "ja": "促す", "d": "2026-06-17", "n": 1}, {"en": "eligible", "ja": "資格のある、ふさわしい", "d": "2026-06-17", "n": 1}, {"en": "notify", "ja": "通知する", "d": "2026-06-17", "n": 1}, {"en": "reasonable", "ja": "適度な、妥当な", "d": "2026-06-17", "n": 1}, {"en": "aspect", "ja": "側面、観点", "d": "2026-06-17", "n": 1}, {"en": "thrilled", "ja": "心から喜んだ、うれしい、わくわくした", "d": "2026-06-17", "n": 1}, {"en": "wonder~", "ja": "〜しようかなと思う", "d": "2026-06-17", "n": 1}, {"en": "even~", "ja": "~でさえ", "d": "2026-06-17", "n": 1}, {"en": "even+形容詞", "ja": "さらに〜", "d": "2026-06-17", "n": 1}, {"en": "even though~", "ja": "たとえ〜でも(事実にたいして)", "d": "2026-06-17", "n": 1}, {"en": "even if~", "ja": "たとえ〜でも(仮の情報、未来におこるかもしれないことに対して)", "d": "2026-06-17", "n": 1}, {"en": "to major", "ja": "〜を専攻する", "d": "2026-06-17", "n": 1}, {"en": "to draw", "ja": "〜を描く", "d": "2026-06-17", "n": 1}, {"en": "to press", "ja": "押す", "d": "2026-06-17", "n": 1}, {"en": "to hold", "ja": "長押しする", "d": "2026-06-17", "n": 1}, {"en": "be surprised at ~", "ja": "〜におどろく", "d": "2026-06-17", "n": 1}, {"en": "function/feature", "ja": "機能", "d": "2026-06-17", "n": 1}, {"en": "Brand new", "ja": "新品の", "d": "2026-06-17", "n": 1}, {"en": "secondhand", "ja": "中古", "d": "2026-06-17", "n": 1}, {"en": "previous", "ja": "前の", "d": "2026-06-17", "n": 1}, {"en": "next", "ja": "次の", "d": "2026-06-17", "n": 1}, {"en": "compartment", "ja": "区画、車両、区分", "d": "2026-06-24", "n": 1}, {"en": "bid", "ja": "入札する", "d": "2026-06-24", "n": 1}, {"en": "detergent", "ja": "洗剤", "d": "2026-06-24", "n": 1}, {"en": "tentative", "ja": "暫定的な、一時的な、試験的な", "d": "2026-06-24", "n": 1}, {"en": "publish", "ja": "発行する、出版する", "d": "2026-06-24", "n": 1}, {"en": "dispose", "ja": "廃棄する、処分する", "d": "2026-06-24", "n": 1}, {"en": "authority", "ja": "権威、権力、権限", "d": "2026-06-24", "n": 1}, {"en": "functional", "ja": "機能的な", "d": "2026-06-24", "n": 1}, {"en": "lack", "ja": "不足", "d": "2026-06-24", "n": 1}, {"en": "luck", "ja": "運、幸運", "d": "2026-06-24", "n": 1}, {"en": "packet", "ja": "個包", "d": "2026-07-01", "n": 1}, {"en": "boost", "ja": "押し上げる", "d": "2026-07-01", "n": 1}, {"en": "anticipated", "ja": "待ち望まれた", "d": "2026-07-01", "n": 1}, {"en": "gaze", "ja": "じっと見る", "d": "2026-07-01", "n": 1}, {"en": "eager", "ja": "〜したがる、熱望する", "d": "2026-07-01", "n": 1}, {"en": "branch", "ja": "支店", "d": "2026-07-01", "n": 1}, {"en": "specialize", "ja": "専門とする", "d": "2026-07-01", "n": 1}, {"en": "delay", "ja": "遅らせる、遅れ", "d": "2026-07-01", "n": 1}, {"en": "be familiar with~", "ja": "~に詳しい", "d": "2026-07-01", "n": 1}, {"en": "except for~", "ja": "〜以外の", "d": "2026-07-01", "n": 1}, {"en": "to expect", "ja": "〜に期待する", "d": "2026-07-01", "n": 1}, {"en": "other than~", "ja": "〜の他に", "d": "2026-07-01", "n": 1}, {"en": "severe", "ja": "ひどい", "d": "2026-07-01", "n": 1}, {"en": "initial velocity", "ja": "初速", "d": "2026-07-01", "n": 1}, {"en": "to wake up", "ja": "起きる", "d": "2026-07-01", "n": 1}, {"en": "awake", "ja": "起きている(形容詞)", "d": "2026-07-01", "n": 1}, {"en": "spoiler", "ja": "ネタバレ", "d": "2026-07-01", "n": 1}, {"en": "to spoil", "ja": "〜をこぼす、ネタバレをする", "d": "2026-07-01", "n": 1}, {"en": "first half", "ja": "前半", "d": "2026-07-01", "n": 1}, {"en": "second half", "ja": "後半", "d": "2026-07-01", "n": 1}, {"en": "first quarter", "ja": "第一クウォーター", "d": "2026-07-01", "n": 1}, {"en": "last quarter", "ja": "最終クウォーター", "d": "2026-07-01", "n": 1}, {"en": "That's what I say", "ja": "それだよ！", "d": "2026-07-01", "n": 1}];
+const DRILLS = [{"id": "d1", "tag": "be動詞のクセ", "q": "I'm belong to the class 3-3.", "choices": ["I belong to class 3-3.", "I'm belong to class 3-3.", "I am belong the class 3-3."], "exp": "<b>belong は一般動詞</b>なので be動詞は不要。「I'm + 動詞の原形」はそうたくん頻出パターン！"}, {"id": "d2", "tag": "be動詞のクセ", "q": "I'm live in Yugawara.", "choices": ["I live in Yugawara.", "I'm live in Yugawara.", "I am living Yugawara."], "exp": "live も一般動詞。<b>I live in ~</b> でOK。be動詞とセットにしない。"}, {"id": "d3", "tag": "動名詞", "q": "My hobby is play videogames.", "choices": ["My hobby is playing videogames.", "My hobby is play videogames.", "My hobby is to playing videogames."], "exp": "「趣味＝〜すること」は <b>動名詞 (playing)</b>。is のあとに動詞の原形は置けない。"}, {"id": "d4", "tag": "動名詞", "q": "My hobby is eat.", "choices": ["My hobby is eating.", "My hobby is eat.", "My hobby is to eats."], "exp": "これも同じ型。<b>is + eating</b>。「is + 原形」に注意！"}, {"id": "d5", "tag": "過去分詞", "q": "I've never wore it before.", "choices": ["I've never worn it before.", "I've never wore it before.", "I've never wearing it before."], "exp": "have + <b>過去分詞</b>。wear - wore - <b>worn</b>。「着たことがない」= I've never worn."}, {"id": "d6", "tag": "主語と動詞の一致", "q": "They is different companies.", "choices": ["They are different companies.", "They is different companies.", "They am different companies."], "exp": "They は複数 → <b>are</b>。主語を確認してからbe動詞を選ぶ。"}, {"id": "d7", "tag": "経験の言い方", "q": "I went there for only two times.", "choices": ["I've only been there twice.", "I went there for only two times.", "I have gone there two time."], "exp": "「〜回行ったことがある」は <b>have been there + 回数</b>。2回は twice が自然。"}, {"id": "d8", "tag": "二重否定", "q": "I don't think that I can't speak English.", "choices": ["I don't think I can speak English.", "I don't think that I can't speak English.", "I think I don't can't speak English."], "exp": "否定は1回でOK。<b>I don't think I can ~</b>（〜できないと思う）。英語は don't think 側に否定を寄せる。"}, {"id": "d9", "tag": "スペル", "q": "I successed in the exam.", "choices": ["I succeeded in the exam.", "I successed in the exam.", "I succeed in the exam yesterday."], "exp": "動詞は <b>succeed</b>（名詞が success）。過去形は <b>succeeded</b>。資格試験の話でよく使うから要チェック！"}, {"id": "d10", "tag": "can + 原形", "q": "Because I can speaking with friends.", "choices": ["Because I can chat with friends.", "Because I can speaking with friends.", "Because I can to speak with friends."], "exp": "<b>can のあとは動詞の原形</b>。「友達としゃべれるから」なら chat が自然。"}, {"id": "d11", "tag": "It is ~ to構文", "q": "Fishing on rainy day is easy.", "choices": ["It is easy to fish on a rainy day.", "Fishing on rainy day is easy.", "To fishing on rainy days is easy."], "exp": "授業でやった型：<b>It is easy to ~</b>。あと rainy day には冠詞 <b>a</b> を忘れずに。"}, {"id": "d12", "tag": "比較", "q": "Salary in overseas is more expensinve than salary in Japan.", "choices": ["Salaries overseas are higher than in Japan.", "Salary in overseas is more expensive than Japan.", "Salary of overseas is expensiver than Japan."], "exp": "給料の高い/安いは <b>high / low</b>。expensive は物の値段。あと overseas に in は不要。"}, {"id": "d13", "tag": "あいづち", "q": "A: I can't surf in winter. B: (　　) — 「おれも（できない）」", "choices": ["Me neither.", "Me too.", "Me can't."], "exp": "否定文へのあいづちは <b>Me neither</b>。肯定文なら Me too。授業でイントネーションもやったやつ！"}, {"id": "d14", "tag": "疑問詞", "q": "「どういう意味？」と聞きたいとき ⇒ How do you mean?", "choices": ["What do you mean?", "How do you mean?", "Why do you mean?"], "exp": "意味を尋ねるのは <b>What</b> do you mean?。How は「どうやって」なのでここでは使わない。"}, {"id": "d15", "tag": "時制", "q": "(子どもの頃の話で) I can eat green pepper.", "choices": ["I could eat green peppers.", "I can eat green pepper.", "I can ate green pepper."], "exp": "昔の話なら can も過去形 <b>could</b> に。時制を文全体でそろえる。"}, {"id": "d16", "tag": "乗り物の英語", "q": "You (　　) a ship, but you (　　) a car.", "choices": ["board / get in", "ride / board", "board / board"], "exp": "船・飛行機は <b>board</b>、車は <b>get in / ride in</b>。海洋系のきみには必須の使い分け！"}, {"id": "d17", "tag": "語彙選び", "q": "I fished fish.", "choices": ["I caught a fish.", "I fished fish.", "I fishing a fish."], "exp": "「魚を釣った」は <b>catch（caught）</b> を使うのが自然。fish を動詞と名詞で重ねない。"}, {"id": "d18", "tag": "受動態", "q": "(進級した、の意味で) I promoted.", "choices": ["I advanced to the next grade.", "I promoted.", "I was promote."], "exp": "進級は <b>advance</b>。promote を使うなら受け身で <b>I was promoted</b>（昇進させられる側だから）。"}];
+const META = {"lessons": 168, "since": "2022年2月", "years": "4年5ヶ月"};
+
+/* ---------- 進捗ストレージ ---------- */
+const store = {
+  load(){ try{ return JSON.parse(localStorage.getItem("sota-gym")||"{}"); }catch(e){ return {}; } },
+  save(d){ localStorage.setItem("sota-gym", JSON.stringify(d)); }
+};
+let P = Object.assign({words:{}, drills:{}, days:{}, total:0, correct:0}, store.load());
+
+function today(){ return new Date().toISOString().slice(0,10); }
+function bumpDay(){ P.days[today()] = (P.days[today()]||0)+1; }
+function streak(){
+  let s=0, d=new Date();
+  if(!P.days[today()]) d.setDate(d.getDate()-1); // 今日まだでも昨日から継続扱い
+  while(P.days[d.toISOString().slice(0,10)]){ s++; d.setDate(d.getDate()-1); }
+  return s;
+}
+function wstat(key){ return P.words[key] || {c:0,w:0}; }
+function isWeak(v){ const s=wstat(v.en); return s.w>0 && s.w>=s.c; }
+function isMastered(v){ const s=wstat(v.en); return s.c>=3 && s.c>s.w*2; }
+
+/* ---------- ユーティリティ ---------- */
+const $ = sel => document.querySelector(sel);
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ---------- 出題プール ---------- */
+const FILTERS = {
+  recent:{label:"最近の授業", fn:v=>v.d>="2026-01-01"},
+  all:{label:"全期間", fn:v=>true},
+  repeat:{label:"よく出た語", fn:v=>v.n>1},
+  weak:{label:"苦手だけ", fn:v=>isWeak(v)}
+};
+function pickVocab(filterKey, n){
+  let pool = VOCAB.filter(FILTERS[filterKey].fn);
+  if(pool.length < 4) pool = VOCAB.slice();
+  // 苦手語を優先しつつランダム
+  const weighted = pool.map(v=>{
+    const s=wstat(v.en);
+    return {v, w: 1 + s.w*2 - Math.min(s.c,3)*0.3 + (v.n>1?0.5:0)};
+  });
+  const out=[];
+  const bag = weighted.slice();
+  while(out.length<n && bag.length){
+    let tot = bag.reduce((a,b)=>a+Math.max(b.w,0.1),0);
+    let r = Math.random()*tot;
+    for(let i=0;i<bag.length;i++){
+      r -= Math.max(bag[i].w,0.1);
+      if(r<=0){ out.push(bag[i].v); bag.splice(i,1); break; }
+    }
+  }
+  return out;
+}
+function vocabQuestion(v, dir){
+  const others = shuffle(VOCAB.filter(x=>x.en!==v.en)).slice(0,3);
+  if(dir==="e2j"){
+    return {type:"vocab", key:v.en, prompt:v.en, label:"この単語の意味は？",
+      choices:shuffle([{t:v.ja,ok:true},...others.map(o=>({t:o.ja,ok:false}))]),
+      answer:v.ja, sub:v};
+  }
+  return {type:"vocab", key:v.en, prompt:v.ja, label:"英語で言うと？",
+    choices:shuffle([{t:v.en,ok:true},...others.map(o=>({t:o.en,ok:false}))]),
+    answer:v.en, sub:v};
+}
+function drillQuestion(d){
+  return {type:"drill", key:d.id, prompt:d.q, label:"正しい英文はどれ？", tag:d.tag,
+    choices:shuffle(d.choices.map((t,i)=>({t,ok:i===0}))),
+    answer:d.choices[0], explain:d.exp};
+}
+
+/* ---------- 画面 ---------- */
+let session = null;
+
+function render(html){ $("#app").innerHTML = html; window.scrollTo(0,0); }
+
+function header(){
+  return `<header>
+    <div class="logo"></div>
+    <div><h1>SOTA'S ENGLISH GYM</h1><div class="sub">そうたの英語トレセン</div></div>
+    <div class="streak"><b>🔥 ${streak()}</b>連続日数</div>
+  </header>`;
+}
+
+function home(){
+  const weakCount = VOCAB.filter(isWeak).length;
+  render(`${header()}
+  <button class="menu-btn" onclick="startDaily()">
+    <div class="ic" style="background:rgba(251,191,36,.15)">⚡</div>
+    <div class="tt"><b>今日の10本ノック</b><span>単語7問＋ドリル3問のミックス</span></div>
+    <div class="arrow">›</div>
+  </button>
+  <button class="menu-btn" onclick="vocabSetup()">
+    <div class="ic" style="background:rgba(45,212,234,.15)">🌊</div>
+    <div class="tt"><b>単語道場</b><span>授業に出た${VOCAB.length}語からランダム出題</span></div>
+    <div class="arrow">›</div>
+  </button>
+  <button class="menu-btn" onclick="startDrill()">
+    <div class="ic" style="background:rgba(248,113,113,.15)">🔧</div>
+    <div class="tt"><b>ミス撲滅ドリル</b><span>過去の授業で実際に間違えた文を修理する</span></div>
+    <div class="arrow">›</div>
+  </button>
+  <button class="menu-btn" onclick="startPron()">
+    <div class="ic" style="background:rgba(167,139,250,.15)">🎤</div>
+    <div class="tt"><b>発音道場</b><span>お手本を聞いて、マイクに話して発音チェック</span></div>
+    <div class="arrow">›</div>
+  </button>
+  <button class="menu-btn" onclick="stats()">
+    <div class="ic" style="background:rgba(52,211,153,.15)">📈</div>
+    <div class="tt"><b>きろく</b><span>成績と苦手リスト${weakCount?`（苦手 ${weakCount}語）`:""}</span></div>
+    <div class="arrow">›</div>
+  </button>
+  <div class="footer-note">${META.since}から${META.lessons}回の授業データで作成 📻</div>`);
+}
+
+/* --- 単語道場 設定 --- */
+let vcfg = {filter:"recent", dir:"e2j", n:10};
+function vocabSetup(){
+  render(`${header()}
+  <div class="card">
+    <h3 class="sec">🌊 単語道場</h3>
+    <div class="section-label">出題範囲</div>
+    <div class="pills">${Object.entries(FILTERS).map(([k,f])=>{
+      const cnt=VOCAB.filter(f.fn).length;
+      return `<button class="pill ${vcfg.filter===k?"on":""}" ${cnt<1?"disabled style='opacity:.4'":""} onclick="vcfg.filter='${k}';vocabSetup()">${f.label} (${cnt})</button>`;
+    }).join("")}</div>
+    <div class="section-label">出題方向</div>
+    <div class="pills">
+      <button class="pill ${vcfg.dir==="e2j"?"on":""}" onclick="vcfg.dir='e2j';vocabSetup()">英語 → 意味</button>
+      <button class="pill ${vcfg.dir==="j2e"?"on":""}" onclick="vcfg.dir='j2e';vocabSetup()">意味 → 英語</button>
+    </div>
+    <div class="section-label">問題数</div>
+    <div class="pills">
+      ${[10,20,30].map(n=>`<button class="pill ${vcfg.n===n?"on":""}" onclick="vcfg.n=${n};vocabSetup()">${n}問</button>`).join("")}
+    </div>
+    <button class="next-btn" onclick="startVocab()">スタート</button>
+  </div>
+  <button class="back-link" onclick="home()">‹ もどる</button>`);
+}
+function startVocab(){
+  const words = pickVocab(vcfg.filter, vcfg.n);
+  session = {qs: words.map(v=>vocabQuestion(v, vcfg.dir)), i:0, ok:0, misses:[]};
+  question();
+}
+function startDaily(){
+  const words = pickVocab("recent", 7).map(v=>vocabQuestion(v, Math.random()<0.5?"e2j":"j2e"));
+  const drills = shuffle(DRILLS).slice(0,3).map(drillQuestion);
+  session = {qs: shuffle(words.concat(drills)), i:0, ok:0, misses:[]};
+  question();
+}
+function startDrill(){
+  session = {qs: shuffle(DRILLS).slice(0,8).map(drillQuestion), i:0, ok:0, misses:[]};
+  question();
+}
+
+/* --- 出題 --- */
+function question(){
+  const q = session.qs[session.i];
+  const pct = Math.round(session.i/session.qs.length*100);
+  render(`${header()}
+  <div class="card">
+    <div class="qhead"><span>Q${session.i+1} / ${session.qs.length}</span><button class="quit" onclick="home()">やめる ✕</button></div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    ${q.tag?`<span class="tag">${q.tag}</span>`:""}
+    <div class="prompt-label">${q.label}</div>
+    <div class="prompt ${q.type==="drill"?"small":""}">${esc(q.prompt)}</div>
+    ${q.type==="drill"?`<div class="prompt-note">↑ 実際の授業から出題。正しいのを選ぼう</div>`:""}
+    <div class="choices">
+      ${q.choices.map((c,i)=>`<button class="choice" id="ch${i}" onclick="answer(${i})">${esc(c.t)}</button>`).join("")}
+    </div>
+    <div id="after"></div>
+  </div>`);
+}
+function answer(i){
+  const q = session.qs[session.i];
+  const c = q.choices[i];
+  q.choices.forEach((ch,j)=>{
+    const el = $("#ch"+j);
+    el.disabled = true;
+    if(ch.ok) el.classList.add("correct");
+    else if(j===i) el.classList.add("wrong");
+  });
+  // 記録
+  bumpDay(); P.total++;
+  if(q.type==="vocab"){
+    const s = P.words[q.key] || {c:0,w:0};
+    c.ok ? s.c++ : s.w++;
+    P.words[q.key]=s;
+  } else {
+    const s = P.drills[q.key] || {c:0,w:0};
+    c.ok ? s.c++ : s.w++;
+    P.drills[q.key]=s;
+  }
+  if(c.ok){ P.correct++; session.ok++; } else { session.misses.push(q); }
+  store.save(P);
+  const exp = q.explain ? `<div class="explain">${q.explain}</div>` :
+    (!c.ok ? `<div class="explain"><b>正解:</b> ${esc(q.answer)}</div>` : "");
+  $("#after").innerHTML = `${exp}
+    <button class="listen-btn" style="margin-top:14px" onclick="speakCurrent()">🔊 発音を聞く</button>
+    <button class="next-btn" onclick="nextQ()">${session.i+1<session.qs.length?"次へ →":"結果を見る"}</button>`;
+  $("#after").querySelector(".next-btn").focus();
+}
+function speakCurrent(){
+  const q = session.qs[session.i];
+  speak(cleanTarget(q.type==="vocab" ? q.sub.en : q.answer));
+}
+function nextQ(){
+  session.i++;
+  if(session.i < session.qs.length) question(); else result();
+}
+function result(){
+  const rate = Math.round(session.ok/session.qs.length*100);
+  const face = rate===100?"🏆":rate>=80?"🎉":rate>=60?"💪":"🔧";
+  const msg = rate===100?"パーフェクト！":rate>=80?"ナイスラン！":rate>=60?"いい波きてる":"苦手は伸びしろ。もう1本！";
+  render(`${header()}
+  <div class="card result">
+    <div class="big">${face}</div>
+    <h2>${msg}</h2>
+    <p>正答率 ${rate}%</p>
+    <div class="score-row">
+      <div><b style="color:var(--green)">${session.ok}</b><span>正解</span></div>
+      <div><b style="color:var(--red)">${session.qs.length-session.ok}</b><span>ミス</span></div>
+      <div><b style="color:var(--amber)">${streak()}</b><span>連続日数</span></div>
+    </div>
+    ${session.misses.length?`<div class="review-list">
+      <div class="note" style="margin-bottom:8px">今回のミスをおさらい：</div>
+      ${session.misses.map(q=>`<div class="item"><b>${esc(q.type==="vocab"?q.prompt:q.answer)}</b><br>${esc(q.type==="vocab"?q.answer:"")}${q.explain||""}</div>`).join("")}
+    </div>`:""}
+    <button class="next-btn" onclick="home()">ホームへ</button>
+  </div>`);
+}
+
+/* --- 発音道場 --- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = ()=>{}; }catch(e){}
+function speak(text){
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US"; u.rate = 0.92;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function cleanTarget(t){
+  return t.replace(/[~〜]/g," ").replace(/\(.*?\)/g," ").replace(/（.*?）/g," ").replace(/\s+/g," ").trim();
+}
+function startPron(){
+  if(!SR || !("speechSynthesis" in window)){
+    render(`${header()}
+    <div class="card"><h3 class="sec">🎤 発音道場</h3>
+      <p class="note">このブラウザは音声認識に対応していないみたい。iPhoneのSafariか、PCのChromeで開くと使えるよ。</p></div>
+    <button class="back-link" onclick="home()">‹ もどる</button>`);
+    return;
+  }
+  const words = pickVocab("recent", 3).map(v=>({text:cleanTarget(v.en), ja:v.ja}));
+  const sents = shuffle(DRILLS.filter(d=>!/[\/(（:]/.test(d.choices[0]))).slice(0,2)
+    .map(d=>({text:cleanTarget(d.choices[0]), ja:""}));
+  session = {items: shuffle(words.concat(sents)).filter(it=>/[a-zA-Z]/.test(it.text)), i:0, scores:[]};
+  pronItem();
+}
+function pronItem(){
+  const it = session.items[session.i];
+  const pct = Math.round(session.i/session.items.length*100);
+  render(`${header()}
+  <div class="card">
+    <div class="qhead"><span>${session.i+1} / ${session.items.length}</span><button class="quit" onclick="home()">やめる ✕</button></div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <div class="prompt-label" style="text-align:center">声に出して言ってみよう</div>
+    <div class="pron-target">${esc(it.text)}</div>
+    ${it.ja?`<div class="pron-ja">${esc(it.ja)}</div>`:""}
+    <button class="listen-btn" onclick="speak(session.items[session.i].text)">🔊 お手本を聞く</button>
+    <button class="mic-btn" id="mic" onclick="listen()">🎤</button>
+    <div class="mic-hint" id="hint">マイクをタップして話す</div>
+    <div id="pron-out"></div>
+  </div>`);
+}
+let rec = null;
+function listen(){
+  if(rec){ try{rec.stop();}catch(e){} rec=null; return; }
+  speechSynthesis.cancel();
+  const r = new SR();
+  r.lang = "en-US"; r.interimResults = false; r.maxAlternatives = 5;
+  const mic = $("#mic");
+  mic.classList.add("listening");
+  $("#hint").textContent = "聞いてるよ…（もう一度タップで停止）";
+  r.onresult = e => { pronResult([...e.results[0]].map(a=>a.transcript)); };
+  r.onerror = e => {
+    $("#hint").textContent = e.error==="not-allowed"
+      ? "マイクの使用を許可してね（設定 → Safari → マイク）"
+      : "聞き取れなかった。もう一回タップ！";
+  };
+  r.onend = () => { mic.classList.remove("listening"); rec=null; };
+  rec = r;
+  try{ r.start(); }catch(e){ $("#hint").textContent="開始できなかった。もう一回タップ！"; }
+}
+function tokens(s){ return s.toLowerCase().replace(/[^a-z0-9' ]/g," ").split(/\s+/).filter(Boolean); }
+function matchScore(target, heard){
+  const T=tokens(target), H=tokens(heard), n=T.length, m=H.length;
+  const dp=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)
+    dp[i][j] = T[i-1]===H[j-1] ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j],dp[i][j-1]);
+  const hit=new Array(n).fill(false);
+  let i=n,j=m;
+  while(i>0&&j>0){
+    if(T[i-1]===H[j-1]){ hit[i-1]=true; i--; j--; }
+    else if(dp[i-1][j]>=dp[i][j-1]) i--; else j--;
+  }
+  return {pct: n? Math.round(dp[n][m]/n*100):0, T, hit};
+}
+function pronResult(alts){
+  const it = session.items[session.i];
+  let best = null;
+  for(const a of alts){ const s=matchScore(it.text,a); if(!best||s.pct>best.s.pct) best={a,s}; }
+  const {a,s} = best;
+  bumpDay(); P.pron=(P.pron||0)+1; store.save(P);
+  session.scores[session.i] = Math.max(session.scores[session.i]||0, s.pct);
+  const good = s.pct>=80, mid = s.pct>=50;
+  const wordsHtml = s.T.map((w,k)=>`<span class="${s.hit[k]?"hit":"miss"}">${esc(w)}</span>`).join(" ");
+  $("#pron-out").innerHTML = `
+    <div class="score-big">${good?"🎯":mid?"👍":"🔁"} ${s.pct}%</div>
+    <div class="heard">${wordsHtml}</div>
+    <div class="mic-hint" style="margin-top:4px">聞き取り結果: “${esc(a)}”</div>
+    ${good?"":`<div class="explain" style="margin-top:10px">${mid?"おしい！":"もう一回！"}<b>赤い単語</b>が伝わらなかったところ。🔊お手本を聞いて、🎤でリトライできるよ。</div>`}
+    <button class="next-btn" onclick="pronNext()">${session.i+1<session.items.length?"次へ →":"結果を見る"}</button>`;
+  speak(good ? "Great job!" : "Listen and try again. " + it.text);
+}
+function pronNext(){
+  session.i++;
+  if(session.i < session.items.length) pronItem(); else pronDone();
+}
+function pronDone(){
+  const avg = Math.round(session.scores.reduce((x,y)=>x+(y||0),0)/session.items.length);
+  const face = avg>=90?"🏆":avg>=70?"🎉":"💪";
+  render(`${header()}
+  <div class="card result">
+    <div class="big">${face}</div>
+    <h2>発音トレ終了！</h2>
+    <p>平均スコア ${avg}%</p>
+    <div class="review-list">
+      ${session.items.map((it,k)=>`<div class="item"><b>${esc(it.text)}</b> — ${session.scores[k]||0}%</div>`).join("")}
+    </div>
+    <button class="next-btn" onclick="startPron()">もう1セット</button>
+    <button class="back-link" onclick="home()" style="margin:12px auto 0">ホームへ</button>
+  </div>`);
+}
+
+/* --- きろく --- */
+function stats(){
+  const weak = VOCAB.filter(isWeak).sort((a,b)=>wstat(b.en).w-wstat(a.en).w).slice(0,15);
+  const mastered = VOCAB.filter(isMastered).length;
+  const acc = P.total? Math.round(P.correct/P.total*100) : 0;
+  render(`${header()}
+  <div class="card">
+    <h3 class="sec">📈 きろく</h3>
+    <div class="stat-grid">
+      <div class="stat"><b>${P.total}</b><span>解いた問題</span></div>
+      <div class="stat"><b>${acc}%</b><span>通算正答率</span></div>
+      <div class="stat"><b>${mastered} <small style="font-size:12px;color:var(--sub)">/ ${VOCAB.length}</small></b><span>マスター済み単語</span></div>
+      <div class="stat"><b>${streak()}日</b><span>連続トレーニング</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 class="sec">🔧 いまの苦手リスト</h3>
+    ${weak.length? weak.map(v=>`<div class="weak-item"><b>${esc(v.en)}</b><span class="ja">${esc(v.ja)}</span></div>`).join("")
+      : `<p class="note">まだ苦手データなし。問題を解くとここに「要復習の単語」が自動で並ぶ。</p>`}
+    ${weak.length?`<button class="next-btn" onclick="vcfg.filter='weak';startVocab()">苦手だけ特訓する</button>`:""}
+  </div>
+  <div class="card">
+    <h3 class="sec">🏄 きみの英語のあゆみ</h3>
+    <p class="note" style="line-height:1.9">
+      ${META.since}のスタートから <b style="color:var(--cyan)">${META.years}</b>・<b style="color:var(--cyan)">${META.lessons}回</b> の授業を継続中。<br>
+      このアプリの${VOCAB.length}語は、ぜんぶ自分の授業に出てきた単語。<br>
+      つまり全問「一度は出会ったことがある」——思い出せれば勝ち。
+    </p>
+  </div>
+  <button class="back-link" onclick="home()">‹ もどる</button>`);
+}
+
+home();
+</script>
+</body>
+</html>
