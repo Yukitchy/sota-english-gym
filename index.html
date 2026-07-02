@@ -128,6 +128,11 @@ h3.sec{font-size:14px;margin:6px 0 10px;color:var(--cyan);letter-spacing:.14em;t
 .note{font-size:12px;color:var(--sub)}
 .footer-note{text-align:center;font-size:11px;color:var(--sub);margin-top:20px;opacity:.7;letter-spacing:.06em}
 
+.mic-help{margin:12px auto 0;max-width:340px;font-size:12px;color:var(--sub)}
+.mic-help summary{cursor:pointer;color:var(--cyan-dim);letter-spacing:.04em}
+.mic-help ol{margin:8px 0 4px 18px;display:flex;flex-direction:column;gap:6px;line-height:1.7}
+.mic-help b{color:var(--text)}
+
 /* prep lab */
 .prep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
 .prep-tile{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 6px 8px;color:var(--cyan-hi);font-size:14px;font-weight:700;letter-spacing:.06em;cursor:pointer;text-align:center}
@@ -541,6 +546,16 @@ function pronItem(){
     <button class="listen-btn" onclick="speak(session.items[session.i].text)">🔊 お手本を聞く</button>
     <button class="mic-btn" id="mic" onclick="listen()">🎤</button>
     <div class="mic-hint" id="hint">マイクをタップして話す</div>
+    <details class="mic-help">
+      <summary>🛠 認識されない時はここをタップ</summary>
+      <ol>
+        <li>LINEなどアプリの中で開いてる → 右下の「…」から<b>Safariで開く</b>（アプリ内ブラウザはマイク不可）</li>
+        <li>iPhoneの<b>設定 → 一般 → キーボード → 音声入力</b>をON</li>
+        <li><b>設定 → アプリ → Safari → マイク</b>を「確認」か「許可」に</li>
+        <li>1回目は空振りすることがある → もう一度🎤をタップ</li>
+        <li>直らない時は、ヒント欄の [ ] 内のコードを先生に送ってね</li>
+      </ol>
+    </details>
     <div id="pron-out"></div>
   </div>`);
 }
@@ -552,14 +567,23 @@ function listen(){
   r.lang = "en-US"; r.interimResults = false; r.maxAlternatives = 5;
   const mic = $("#mic");
   mic.classList.add("listening");
-  $("#hint").textContent = "聞いてるよ…（もう一度タップで停止）";
+  $("#hint").textContent = "マイク準備中…";
+  r.onaudiostart = () => { $("#hint").textContent = "🎧 聞いてるよ！はっきり話してね（もう一度タップで停止）"; };
   r.onresult = e => { pronResult([...e.results[0]].map(a=>a.transcript)); };
+  r.onnomatch = () => { $("#hint").textContent = "聞き取れなかった。もう少し大きな声でもう一回！"; };
   r.onerror = e => {
-    $("#hint").textContent = e.error==="not-allowed"
-      ? "マイクの使用を許可してね（設定 → Safari → マイク）"
-      : "聞き取れなかった。もう一回タップ！";
+    const msgs = {
+      "not-allowed": "マイクが許可されてない。アドレスバーの「ぁあ」→ Webサイトの設定 → マイクを許可",
+      "service-not-allowed": "iPhoneの音声入力がオフかも。設定 → 一般 → キーボード →「音声入力」をON。LINEの中で開いてる場合はSafariで開き直してね",
+      "audio-capture": "マイクが見つからない。他のアプリがマイクを使ってない？",
+      "no-speech": "声が聞こえなかった。もう少し大きな声でもう一回！",
+      "network": "ネットにつながってないみたい。電波をチェック！",
+      "aborted": "止めたよ。もう一回タップでスタート"
+    };
+    $("#hint").textContent = (msgs[e.error] || "聞き取れなかった。もう一回タップ！") + " [" + e.error + "]";
   };
-  r.onend = () => { mic.classList.remove("listening"); rec=null; };
+  const watchdog = setTimeout(()=>{ if(rec===r){ try{r.stop();}catch(e){} $("#hint").textContent = "反応がなかった。もう一回🎤をタップしてみて（1回目は空振りすることがある）"; } }, 12000);
+  r.onend = () => { clearTimeout(watchdog); mic.classList.remove("listening"); rec=null; };
   rec = r;
   try{ r.start(); }catch(e){ $("#hint").textContent="開始できなかった。もう一回タップ！"; }
 }
