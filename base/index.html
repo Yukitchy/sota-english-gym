@@ -1,0 +1,347 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SOTA BASE</title>
+<style>
+  :root{
+    --sea:#0a84c4; --sea-deep:#075a86; --sea-light:#e3f3fb;
+    --sand:#f4ead4; --sand-line:#e6d7b6;
+    --ink:#1e2b33; --sub:#5b6b74; --card:#ffffff; --bg:#f6fbfe;
+    --good:#12a150; --ok:#c88a00; --bad:#8a95a0;
+    --shadow:0 2px 10px rgba(10,60,90,.08), 0 1px 3px rgba(10,60,90,.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;
+    line-height:1.6; -webkit-text-size-adjust:100%;
+    word-break:normal; overflow-wrap:anywhere;
+  }
+  .wrap{max-width:440px; margin:0 auto; padding:0 16px 40px}
+  h2{font-size:17px; margin:28px 4px 12px; display:flex; align-items:center; gap:7px}
+  h2 .en{font-size:11px; color:var(--sub); font-weight:500; letter-spacing:.06em}
+  .card{background:var(--card); border-radius:16px; box-shadow:var(--shadow); padding:16px}
+  .note{font-size:11px; color:var(--sub); margin-top:8px; line-height:1.5}
+
+  /* header */
+  header{
+    background:linear-gradient(160deg,var(--sea) 0%,var(--sea-deep) 100%);
+    color:#fff; padding:calc(env(safe-area-inset-top) + 26px) 16px 24px; text-align:center;
+    border-radius:0 0 22px 22px;
+  }
+  header h1{margin:0; font-size:30px; letter-spacing:.14em; font-weight:800}
+  header .sub{margin:4px 0 0; font-size:13px; opacity:.92; letter-spacing:.04em}
+  header .wave{font-size:20px; margin-top:6px; letter-spacing:.3em; opacity:.8}
+
+  /* trainer card */
+  .trainer{
+    margin:-14px auto 0; position:relative; z-index:2;
+    background:linear-gradient(135deg,#ffffff 0%,#f2f9fe 100%);
+    border:2px solid #d5ebf7; border-radius:18px; box-shadow:var(--shadow);
+    padding:16px 16px 14px; max-width:440px;
+  }
+  .trainer .top{display:flex; align-items:center; gap:14px}
+  .avatar{
+    width:64px; height:64px; border-radius:16px; flex:0 0 auto;
+    background:linear-gradient(135deg,var(--sea) 0%,var(--sea-deep) 100%);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:30px; box-shadow:inset 0 0 0 3px rgba(255,255,255,.35);
+  }
+  .trainer .name-en{font-size:22px; font-weight:800; letter-spacing:.1em; line-height:1.15}
+  .trainer .name-ja{font-size:13px; color:var(--sub)}
+  .lv{
+    margin-left:auto; text-align:center; background:var(--sand); border:1px solid var(--sand-line);
+    border-radius:12px; padding:4px 10px; flex:0 0 auto;
+  }
+  .lv .n{font-size:22px; font-weight:800; color:var(--sea-deep); line-height:1}
+  .lv .l{font-size:10px; color:var(--sub); letter-spacing:.08em}
+  .stats{margin-top:12px; display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:13px}
+  .stats dt{color:var(--sub)}
+  .stats dd{margin:0}
+  .badges{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+  .badge{
+    background:var(--sea-light); color:var(--sea-deep); border-radius:999px;
+    padding:5px 11px; font-size:12px; font-weight:600; white-space:nowrap;
+  }
+  .since{margin-top:11px; font-size:10.5px; color:var(--sub); letter-spacing:.08em; text-align:right}
+
+  /* sea now */
+  .now-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .metric{background:var(--sea-light); border-radius:12px; padding:11px 12px}
+  .metric .k{font-size:11px; color:var(--sea-deep); font-weight:600}
+  .metric .v{font-size:19px; font-weight:800; margin-top:2px}
+  .metric .u{font-size:11px; font-weight:600; color:var(--sub)}
+  .verdict{
+    margin-top:12px; border-radius:12px; padding:12px 14px; text-align:center;
+    font-size:16px; font-weight:800; color:#fff;
+  }
+  .v-good{background:var(--good)} .v-ok{background:var(--ok)} .v-bad{background:var(--bad)}
+  .week{display:flex; gap:8px; overflow-x:auto; margin-top:14px; padding-bottom:4px; -webkit-overflow-scrolling:touch}
+  .day{
+    flex:0 0 auto; width:62px; text-align:center; background:#fff;
+    border:1px solid #e6eef3; border-radius:12px; padding:8px 4px;
+  }
+  .day .d{font-size:11px; color:var(--sub)}
+  .day .em{font-size:22px; margin:2px 0}
+  .day .wv{font-size:12px; font-weight:700}
+  .day .mk{font-size:13px; font-weight:800; margin-top:2px}
+  .mk-good{color:var(--good)} .mk-ok{color:var(--ok)} .mk-bad{color:var(--bad)}
+  .offline{color:var(--sub); font-size:13px; text-align:center; padding:10px}
+
+  /* footer */
+  footer{text-align:center; margin-top:34px; color:var(--sub)}
+  .morse{
+    display:inline-block; font-size:22px; letter-spacing:.18em; cursor:pointer;
+    padding:8px 18px; border-radius:999px; background:#fff; box-shadow:var(--shadow);
+    user-select:none; -webkit-user-select:none;
+  }
+  .morse:active{transform:scale(.97)}
+  footer .tap{font-size:11px; margin-top:6px}
+  footer .build{font-size:10px; margin-top:12px; letter-spacing:.06em}
+</style>
+
+<header>
+  <h1>SOTA BASE</h1>
+  <p class="sub">湯河原マリンベース</p>
+  <div class="wave">〜〜〜〜〜</div>
+</header>
+
+<div class="wrap">
+
+  <div class="trainer">
+    <div class="top">
+      <div class="avatar">🏄</div>
+      <div>
+        <div class="name-en">SOTA</div>
+        <div class="name-ja">清水蒼太</div>
+      </div>
+      <div class="lv">
+        <div class="n">169</div>
+        <div class="l">Lv.</div>
+      </div>
+    </div>
+    <dl class="stats">
+      <dt>継続</dt><dd id="streak">計算中…</dd>
+      <dt>所属</dt><dd>横須賀海洋科学高<br>無線技術コース</dd>
+    </dl>
+    <div class="badges">
+      <span class="badge">🏄 サーフィン</span>
+      <span class="badge">🎣 釣り</span>
+      <span class="badge">🎮 ゲーム</span>
+      <span class="badge">📡 無線</span>
+    </div>
+    <div class="since">Since 2022.2.11 ・ 169 LESSONS</div>
+  </div>
+
+  <h2>🌊 今日の海 <span class="en">YOSHIHAMA / YUGAWARA</span></h2>
+  <div class="card" id="sea"><div class="offline">読み込み中…</div></div>
+
+  <h2>🎣 釣りコンディション <span class="en">TIDE</span></h2>
+  <div class="card" id="tide"></div>
+
+  <footer>
+    <div class="morse" id="morse" title="タップで再生">・・・ −−− − ・−</div>
+    <div class="tap">タップで SOTA をモールス再生</div>
+    <div class="build" id="build"></div>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+
+// ---- 継続年月 ----
+(function(){
+  const start = new Date(2022,1,11), now = new Date();
+  let y = now.getFullYear()-start.getFullYear();
+  let m = now.getMonth()-start.getMonth();
+  if(now.getDate()<start.getDate()) m--;
+  if(m<0){y--; m+=12;}
+  document.getElementById("streak").textContent =
+    `${y}年${m}ヶ月（2022.2.11開始）`;
+})();
+
+// ---- build 日付 ----
+(function(){
+  const d = new Date();
+  const p = n=>String(n).padStart(2,"0");
+  document.getElementById("build").textContent =
+    `build ${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+})();
+
+// ---- 天気コード → 絵文字＋語 ----
+function weatherInfo(c){
+  const t = {
+    0:["☀️","快晴"],1:["🌤️","晴れ"],2:["⛅","薄曇り"],3:["☁️","曇り"],
+    45:["🌫️","霧"],48:["🌫️","霧"],
+    51:["🌦️","霧雨"],53:["🌦️","霧雨"],55:["🌦️","霧雨"],
+    56:["🌧️","着氷性の霧雨"],57:["🌧️","着氷性の霧雨"],
+    61:["🌧️","雨"],63:["🌧️","雨"],65:["🌧️","強い雨"],
+    66:["🌧️","着氷性の雨"],67:["🌧️","着氷性の雨"],
+    71:["🌨️","雪"],73:["🌨️","雪"],75:["🌨️","大雪"],77:["🌨️","霧雪"],
+    80:["🌦️","にわか雨"],81:["🌦️","にわか雨"],82:["⛈️","激しいにわか雨"],
+    85:["🌨️","にわか雪"],86:["🌨️","にわか雪"],
+    95:["⛈️","雷雨"],96:["⛈️","雷雨・雹"],99:["⛈️","雷雨・雹"]
+  };
+  return t[c] || ["❓","不明"];
+}
+
+// ---- 16方位（日本語）----
+function windDir(deg){
+  const d = ["北","北北東","北東","東北東","東","東南東","南東","南南東",
+             "南","南南西","南西","西南西","西","西北西","北西","北北西"];
+  return d[Math.round(deg/22.5)%16];
+}
+
+// ---- サーフ判定 ----
+// 基準: 波高0.4〜1.5m かつ 風<7m/s=◎ / 波高0.2〜0.4 or 風7〜10=○ / それ以外=△
+function surf(wave, wind){
+  if(wave>=0.4 && wave<=1.5 && wind<7) return ["◎ いい波","v-good","mk-good"];
+  if((wave>=0.2 && wave<0.4) || (wind>=7 && wind<10)) return ["○ まあまあ","v-ok","mk-ok"];
+  return ["△ 微妙","v-bad","mk-bad"];
+}
+
+// hourly.time（"...THH:00"・JST）から現在に最も近いindex
+function nearestHourIndex(times){
+  const now = Date.now();
+  let best=0, diff=Infinity;
+  for(let i=0;i<times.length;i++){
+    const dt = Math.abs(new Date(times[i]).getTime()-now);
+    if(dt<diff){diff=dt; best=i;}
+  }
+  return best;
+}
+
+// ---- 今日の海 fetch ----
+async function loadSea(){
+  const el = document.getElementById("sea");
+  const marineURL = "https://marine-api.open-meteo.com/v1/marine?latitude=35.145&longitude=139.108&hourly=wave_height,wave_period&timezone=Asia%2FTokyo&forecast_days=7";
+  const wxURL = "https://api.open-meteo.com/v1/forecast?latitude=35.145&longitude=139.108&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&timezone=Asia%2FTokyo&forecast_days=7";
+  try{
+    const [m,w] = await Promise.all([
+      fetch(marineURL).then(r=>{if(!r.ok)throw 0; return r.json();}),
+      fetch(wxURL).then(r=>{if(!r.ok)throw 0; return r.json();})
+    ]);
+    const mh=m.hourly, wh=w.hourly;
+    const i = nearestHourIndex(wh.time);
+    const wave = mh.wave_height[i], period = mh.wave_period[i];
+    const temp = wh.temperature_2m[i], code = wh.weather_code[i];
+    const wind = wh.wind_speed_10m[i], wdeg = wh.wind_direction_10m[i];
+    const wi = weatherInfo(code);
+    const sv = surf(wave, wind);
+
+    // 週間: 日別集計（正午近傍を代表値・波高はその日のmax）
+    const byDay = {};
+    for(let j=0;j<wh.time.length;j++){
+      const day = wh.time[j].slice(0,10);
+      const hour = +wh.time[j].slice(11,13);
+      if(!byDay[day]) byDay[day]={waveMax:0,code:3,wind:0,wave:0,noon:99};
+      const o=byDay[day];
+      const wv = mh.wave_height[j];
+      if(wv!=null && wv>o.waveMax) o.waveMax=wv;
+      const nd = Math.abs(hour-12);
+      if(nd<o.noon){o.noon=nd; o.code=wh.weather_code[j]; o.wind=wh.wind_speed_10m[j]; o.wave=wv;}
+    }
+    const days = Object.keys(byDay).sort().slice(0,7);
+    const wk = days.map(d=>{
+      const o=byDay[d];
+      const [ , wjp]=weatherInfo(o.code);
+      const em=weatherInfo(o.code)[0];
+      const mk=surf(o.wave, o.wind)[2];
+      const mark = mk==="mk-good"?"◎":mk==="mk-ok"?"○":"△";
+      const dd=new Date(d), wd=["日","月","火","水","木","金","土"][dd.getDay()];
+      return `<div class="day">
+        <div class="d">${dd.getMonth()+1}/${dd.getDate()}(${wd})</div>
+        <div class="em">${em}</div>
+        <div class="wv">${o.waveMax.toFixed(1)}m</div>
+        <div class="mk ${mk}">${mark}</div></div>`;
+    }).join("");
+
+    el.innerHTML = `
+      <div class="now-grid">
+        <div class="metric"><div class="k">波高</div><div class="v">${wave.toFixed(1)}<span class="u"> m</span></div></div>
+        <div class="metric"><div class="k">周期</div><div class="v">${period.toFixed(1)}<span class="u"> 秒</span></div></div>
+        <div class="metric"><div class="k">風</div><div class="v">${wind.toFixed(1)}<span class="u"> m/s ${windDir(wdeg)}</span></div></div>
+        <div class="metric"><div class="k">天気 / 気温</div><div class="v">${wi[0]}<span class="u"> ${wi[1]} ${temp.toFixed(0)}℃</span></div></div>
+      </div>
+      <div class="verdict ${sv[1]}">${sv[0]}</div>
+      <div class="week">${wk}</div>
+      <div class="note">サーフ判定: 波高0.4〜1.5m かつ 風7m/s未満=◎／波高0.2〜0.4m or 風7〜10m/s=○／その他=△（吉浜 沖の予報値・目安）</div>`;
+  }catch(e){
+    console.error("sea fetch failed", e);
+    el.innerHTML = `<div class="offline">通信できず（オフライン）<br>電波が入ったら再読み込みしてね</div>`;
+  }
+}
+loadSea();
+
+// ---- 月齢・潮回り ----
+function moonAge(date){
+  // 基準新月 2000-01-06 18:14 JST
+  const ref = Date.UTC(2000,0,6,9,14); // 18:14 JST = 09:14 UTC
+  const syn = 29.530589;
+  let age = ((date.getTime()-ref)/86400000) % syn;
+  if(age<0) age+=syn;
+  return age;
+}
+function moonEmoji(age){
+  const e=["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"];
+  return e[Math.floor((age/29.53)*8 + 0.5)%8];
+}
+// ponytail: 月齢インデックス直引きの潮名表（厳密には旧暦日ベース、実用上は月齢で近似）
+function tide(age){
+  const T=["大潮","大潮","大潮","中潮","中潮","中潮","小潮","小潮","小潮","長潮",
+           "若潮","中潮","中潮","大潮","大潮","大潮","大潮","中潮","中潮","中潮",
+           "小潮","小潮","小潮","長潮","若潮","中潮","中潮","大潮","大潮","大潮"];
+  return T[Math.floor(age)%30];
+}
+function tideMark(name){
+  if(name==="大潮"||name==="中潮") return ["◎","mk-good"];
+  if(name==="小潮") return ["○","mk-ok"];
+  return ["△","mk-bad"]; // 長潮・若潮
+}
+(function(){
+  const el=document.getElementById("tide");
+  const today=new Date();
+  const age=moonAge(today);
+  const rows=[];
+  for(let k=0;k<7;k++){
+    const d=new Date(today.getFullYear(),today.getMonth(),today.getDate()+k);
+    const a=moonAge(d);
+    const name=tide(a), mk=tideMark(name);
+    const wd=["日","月","火","水","木","金","土"][d.getDay()];
+    rows.push(`<div class="day">
+      <div class="d">${d.getMonth()+1}/${d.getDate()}(${wd})</div>
+      <div class="em" style="font-size:15px;font-weight:800;margin:4px 0">${name}</div>
+      <div class="mk ${mk[1]}">${mk[0]}</div></div>`);
+  }
+  el.innerHTML = `
+    <div class="now-grid">
+      <div class="metric"><div class="k">今日の月</div><div class="v">${moonEmoji(age)}<span class="u"> 月齢 ${age.toFixed(1)}</span></div></div>
+      <div class="metric"><div class="k">今日の潮</div><div class="v">${tide(age)}<span class="u"> ${tideMark(tide(age))[0]}</span></div></div>
+    </div>
+    <div class="week">${rows.join("")}</div>
+    <div class="note">釣りおすすめ度: 大潮・中潮=◎／小潮=○／長潮・若潮=△（月齢からの目安）</div>`;
+})();
+
+// ---- モールス（SOTA）----
+document.getElementById("morse").addEventListener("click", async ()=>{
+  const seq="... --- - .-"; // S O T A
+  let ctx;
+  try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
+  if(ctx.state==="suspended") await ctx.resume();
+  let t=ctx.currentTime+0.02;
+  const gap=0.08, dot=0.08, dash=0.24;
+  for(const ch of seq){
+    if(ch===" "){ t+=dash; continue; }
+    const len = ch==="."?dot:dash;
+    const osc=ctx.createOscillator(), g=ctx.createGain();
+    osc.type="sine"; osc.frequency.value=600;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(0.3,t+0.008);
+    g.gain.setValueAtTime(0.3,t+len-0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+len);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(t); osc.stop(t+len);
+    t+=len+gap;
+  }
+});
+</script>
