@@ -86,6 +86,8 @@
   .day .mk{font-size:13px; font-weight:800; margin-top:2px}
   .mk-good{color:var(--good)} .mk-ok{color:var(--ok)} .mk-bad{color:var(--bad)}
   .offline{color:var(--sub); font-size:13px; text-align:center; padding:10px}
+  .src{font-size:10px; color:var(--sub); margin-top:6px; text-align:right; letter-spacing:.02em}
+  .src a{color:var(--sub); text-decoration:underline}
 
   /* footer */
   footer{text-align:center; margin-top:34px; color:var(--sub)}
@@ -137,6 +139,7 @@
 
   <h2>🎣 釣りコンディション <span class="en">TIDE</span></h2>
   <div class="card" id="tide"></div>
+  <div class="src">データ元: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>（波=<a href="https://open-meteo.com/en/docs/marine-weather-api" target="_blank" rel="noopener">Marine API</a>・天気/風=<a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener">Forecast API</a>・吉浜沖 35.145, 139.108）／潮回りは月齢から計算</div>
 
   <footer>
     <div class="morse" id="morse" title="タップで再生">・・・ −−− − ・−</div>
